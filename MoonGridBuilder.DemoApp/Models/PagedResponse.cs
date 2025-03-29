@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace MoonMud.DemoApp.Models;
 
 public class PagedResponse<T>

@@ -1,3 +1,5 @@
+using System;
+
 namespace MoonMud.DemoApp.Models;
 
 public class AssetReadDto

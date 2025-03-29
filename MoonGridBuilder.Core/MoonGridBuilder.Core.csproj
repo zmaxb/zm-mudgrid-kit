@@ -1,14 +1,18 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFramework>net9.0</TargetFramework>
-        <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <RazorComponent Include="Components\MoonGridBuilder.razor" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="MudBlazor" Version="8.3.0" />
         <PackageReference Include="MudBlazor.Extensions" Version="8.3.1" />
     </ItemGroup>
+
 </Project>

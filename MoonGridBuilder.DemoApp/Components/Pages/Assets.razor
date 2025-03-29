@@ -1,12 +1,12 @@
 @page "/assets"
-@using MoonMud.Core
+@using MoonGridBuilder.Core
 @using MoonMud.DemoApp.Models
 @using MoonMud.DemoApp.Service
-@using MoonMud.Core.Components
+@using MoonGridBuilder.Core.Components
 
 @inject AssetGridDataService AssetGridDataService
 
-<MudCrudGrid T="AssetReadDto"
+<MoonGridBuilder T="AssetReadDto"
              Title="Assets Management"
              Subtitle="Manage financial instruments"
              Options="_options"

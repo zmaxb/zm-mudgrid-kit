@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using MudBlazor.Services;
 using MoonMud.DemoApp.Components;
 using MoonMud.DemoApp.Models;
@@ -10,6 +13,7 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        builder.Services.AddScoped<AssetGridDataService>();
 
         builder.Services.AddScoped<IGridDataService<AssetReadDto>, AssetGridDataService>();
 

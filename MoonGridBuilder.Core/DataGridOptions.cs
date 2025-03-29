@@ -1,4 +1,4 @@
-namespace MoonMud.Core;
+namespace MoonGridBuilder.Core;
 
 public class DataGridOptions
 {
