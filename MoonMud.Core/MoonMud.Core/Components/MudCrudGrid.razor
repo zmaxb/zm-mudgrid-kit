@@ -1,0 +1,45 @@
+@typeparam T where T : class
+@using MudBlazor
+
+@namespace  MoonMud.Core.Components
+
+<MudText Typo="Typo.h4" GutterBottom="true">@Title</MudText>
+<MudText Typo="Typo.body1" Class="mb-8">@Subtitle</MudText>
+
+<MudDataGrid T="T" @ref="_dataGrid"
+             MultiSelection="true"
+             SortMode="SortMode.Multiple"
+             Hideable="true"
+             RowsPerPage="@_pageSize"
+             ServerData="LoadData"
+             ShowMenuIcon="true">
+
+    <ToolBarContent>
+        @if (!string.IsNullOrEmpty(Options?.Title))
+        {
+            <MudText Typo="Typo.h6">@Options.Title</MudText>
+            <MudSpacer/>
+        }
+    </ToolBarContent>
+
+    <Columns>
+        @Columns
+    </Columns>
+
+    <PagerContent>
+        <MudDataGridPager T="T" PageSizeOptions="@Options.PageSizeOptions"/>
+    </PagerContent>
+
+</MudDataGrid>
+
+@code {
+
+    [Parameter] public string Title { get; set; } = "Grid Title";
+    [Parameter] public string Subtitle { get; set; } = "Grid Subtitle";
+    [Parameter] public RenderFragment? Columns { get; set; }
+    [Parameter] public required DataGridOptions Options { get; set; }
+    [Parameter] public required Func<GridState<T>, Task<GridData<T>>> LoadData { get; set; }
+
+    private MudDataGrid<T> _dataGrid = null!;
+    private int _pageSize = 10;
+}

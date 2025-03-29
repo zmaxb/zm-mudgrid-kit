@@ -1,0 +1,68 @@
+@page "/assets"
+@using MoonMud.Core
+@using MoonMud.DemoApp.Models
+@using MoonMud.DemoApp.Service
+@using MoonMud.Core.Components
+
+@inject AssetGridDataService AssetGridDataService
+
+<MudCrudGrid T="AssetReadDto"
+             Title="Assets Management"
+             Subtitle="Manage financial instruments"
+             Options="_options"
+             LoadData="LoadAssets"
+             Columns="AssetColumns" />
+
+@code {
+    private readonly DataGridOptions _options = new()
+    {
+        Title = "Assets",
+        PageSizeOptions = new[] { 10, 20, 50 }
+    };
+
+    private RenderFragment AssetColumns => ColumnBuilder<AssetReadDto>.For()
+        .AddColumn<Guid>(x => x.GlobalId, c =>
+        {
+            c.Title = "ID";
+        })
+        .AddColumn<string>(x => x.Name, c =>
+        {
+            c.Title = "Name";
+        })
+        .AddColumn<string>(x => x.Type, c =>
+        {
+            c.Title = "Type";
+            c.Align = Align.Center;
+            c.Filterable = false;
+        })
+        .AddColumn<string>(x => x.Symbol, c =>
+        {
+            c.Title = "Symbol";
+            c.Filterable = false;
+            c.HeaderTemplate = ctx => @<MudText Color="Color.Primary">💰 Symbol</MudText>;
+            c.Template = ctx => @<MudText Color="Color.Info">@ctx.Item.Symbol</MudText>;
+        })
+        .AddColumn<int>(x => x.Precision, c =>
+        {
+            c.Title = "Precision";
+            c.Align = Align.Right;
+            c.Format = "0.###";
+        })
+        .AddColumn<DateTime>(x => x.CreatedAt, c =>
+        {
+            c.Title = "Created At";
+            c.Align = Align.Right;
+            c.Format = "dd MMM yyyy";
+        })
+        .Build();
+
+    private async Task<GridData<AssetReadDto>> LoadAssets(GridState<AssetReadDto> state)
+    {
+        var response = await AssetGridDataService.GetPagedAsync(state);
+        return new GridData<AssetReadDto>
+        {
+            Items = response.Items,
+            TotalItems = response.TotalCount
+        };
+    }
+}
