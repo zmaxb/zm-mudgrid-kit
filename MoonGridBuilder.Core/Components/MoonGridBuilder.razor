@@ -1,26 +1,40 @@
 @typeparam T where T : class
-@using MoonGridBuilder.Core@using MoonGridBuilder.Core
-
+@using MoonGridBuilder.Core
+@using MoonGridBuilder.Core.Interfaces
 @using MudBlazor
+@inject IDataGridService<T> DataGridService
+@inject IDialogService DialogService
 
-@namespace  MoonGridBuilder.Core.Components
-
-<MudText Typo="Typo.h4" GutterBottom="true">@Title</MudText>
-<MudText Typo="Typo.body1" Class="mb-8">@Subtitle</MudText>
+@namespace MoonGridBuilder.Core.Components
 
 <MudDataGrid T="T" @ref="_dataGrid"
-             MultiSelection="true"
+             MultiSelection="Options.MultiSelection"
              SortMode="SortMode.Multiple"
              Hideable="true"
-             RowsPerPage="@_pageSize"
-             ServerData="LoadData"
-             ShowMenuIcon="true">
+             RowsPerPage="Options.DefaultPageSize"
+             ServerData="DataGridService.LoadData"
+             ShowMenuIcon="Options.ShowMenuIcon"
+             ShowColumnOptions="Options.ShowColumnOptions"
+             ShowFilterIcons="Options.ShowFilterIcons">
 
     <ToolBarContent>
-        @if (!string.IsNullOrEmpty(Options?.Title))
+        @if (!string.IsNullOrEmpty(Options.Title))
         {
             <MudText Typo="Typo.h6">@Options.Title</MudText>
             <MudSpacer/>
+        }
+        <MudButton OnClick="OnAdd" Color="Color.Primary">Add</MudButton>
+        <MudButton OnClick="@(_ => OnEdit(_dataGrid.SelectedItems.FirstOrDefault()))" Color="Color.Secondary"
+                   Disabled="@(_dataGrid.Selection.Count != 1)">Edit
+        </MudButton>
+        <MudButton OnClick="OnDelete" Color="Color.Error" Disabled="@(_dataGrid.Selection.Count == 0)">Delete
+        </MudButton>
+        <MudSpacer/>
+        @if (Options.SearchEnabled)
+        {
+            <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search"
+                          Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
+                          IconSize="Size.Medium" Class="mt-0"></MudTextField>
         }
     </ToolBarContent>
 
@@ -29,19 +43,57 @@
     </Columns>
 
     <PagerContent>
-        <MudDataGridPager T="T" PageSizeOptions="@Options.PageSizeOptions"/>
+        @if (Options.ShowPager)
+        {
+            <MudDataGridPager T="T" PageSizeOptions="@Options.PageSizeOptions"/>
+        }
     </PagerContent>
 
 </MudDataGrid>
 
 @code {
 
-    [Parameter] public string Title { get; set; } = "Grid Title";
-    [Parameter] public string Subtitle { get; set; } = "Grid Subtitle";
-    [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public required DataGridOptions Options { get; set; }
-    [Parameter] public required Func<GridState<T>, Task<GridData<T>>> LoadData { get; set; }
+    [Parameter] public RenderFragment? Columns { get; set; }
 
     private MudDataGrid<T> _dataGrid = null!;
-    private int _pageSize = 10;
+    
+    protected override void OnInitialized()
+    {
+        DataGridService.DialogService = DialogService;
+    }
+    private async Task OnAdd()
+    {
+        await DataGridService.OnAdd();
+        await _dataGrid.ReloadServerData();
+    }
+
+    private async Task OnEdit(T entiety)
+    {
+        if (entiety == null) return;
+
+        await DataGridService.OnEdit(entiety);
+        _dataGrid.SelectedItems.Clear();
+        await _dataGrid.ReloadServerData();
+    }
+
+
+    private async Task OnDelete()
+    {
+        var selectedAssets = _dataGrid.SelectedItems.ToList();
+        await DataGridService.OnDelete(selectedAssets);
+        
+        await _dataGrid.ReloadServerData();
+    }
+
+    private async Task OnSearch(string? searchText)
+    {
+        if (searchText != null)
+        {
+            await DataGridService.OnSearch(searchText);
+        }
+
+        await _dataGrid.ReloadServerData();
+    }
+
 }

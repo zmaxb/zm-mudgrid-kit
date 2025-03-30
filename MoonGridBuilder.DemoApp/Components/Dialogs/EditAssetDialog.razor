@@ -1,0 +1,86 @@
+@using MoonMud.DemoApp.Models
+@using MoonMud.DemoApp.Validators
+@inject ISnackbar Snackbar
+
+<MudDialog>
+    <TitleContent>
+        Edit Asset
+    </TitleContent>
+
+    <DialogContent>
+        <MudForm Model="_updateAsset" @ref="_form" Validation="AssetValidator.ValidateValue" ValidationDelay="0">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Name"
+                                  For="@(() => _updateAsset.Name)"
+                                  @bind-Value="_updateAsset.Name"
+                                  Immediate="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Type"
+                                  For="@(() => _updateAsset.Type)"
+                                  @bind-Value="_updateAsset.Type"
+                                  Immediate="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudTextField Label="Symbol"
+                                  For="@(() => _updateAsset.Symbol)"
+                                  @bind-Value="_updateAsset.Symbol"
+                                  Immediate="true" />
+                </MudItem>
+
+                <MudItem xs="12" md="6">
+                    <MudNumericField Label="Precision"
+                                     For="@(() => _updateAsset.Precision)"
+                                     @bind-Value="_updateAsset.Precision"
+                                     Immediate="true"
+                                     Min="0" />
+                </MudItem>
+            </MudGrid>
+
+            <MudStack Row Spacing="2"  Class="mt-6">
+                <MudButton OnClick="CloseDialog" Color="Color.Secondary">Cancel</MudButton>
+                <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Save</MudButton>
+            </MudStack>
+        </MudForm>
+    </DialogContent>
+</MudDialog>
+
+@code {
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
+    [Parameter] public AssetReadDto Entity { get; set; } = null!;
+
+    private AssetUpdateDto _updateAsset = new();
+    private MudForm _form = null!;
+    private static readonly AssetUpdateDtoValidator AssetValidator = new();
+
+    protected override void OnInitialized()
+    {
+        _updateAsset = new AssetUpdateDto
+        {
+            Name = Entity.Name,
+            Type = Entity.Type,
+            Symbol = Entity.Symbol,
+            Precision = Entity.Precision
+        };
+    }
+
+    private async Task Submit()
+    {
+        await _form.Validate();
+        if (_form.IsValid)
+        {
+            MudDialog.Close(DialogResult.Ok((Entity.GlobalId, _updateAsset)));
+        }        else
+        {
+            Snackbar.Add("Please correct the validation errors", severity: Severity.Warning);
+        }
+    }
+
+    private void CloseDialog()
+    {
+        MudDialog.Cancel();
+    }
+}

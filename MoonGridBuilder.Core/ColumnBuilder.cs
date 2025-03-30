@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
 
 namespace MoonGridBuilder.Core;
@@ -100,42 +98,41 @@ public class ColumnBuilder<TItem>
     {
         return builder =>
         {
-            int seq = 0;
+            var seq = 0;
+            
+            builder.OpenComponent(seq++, typeof(SelectColumn<>).MakeGenericType(typeof(TItem)));
+            builder.CloseComponent();
 
             foreach (var column in _columns)
             {
                 if (!column.Visible) continue;
-
-                var componentType = typeof(PropertyColumn<,>)
-                    .MakeGenericType(typeof(TItem), column.PropertyType);
-
-                builder.OpenComponent(seq++, componentType);
-                builder.AddAttribute(seq++, "Property", column.Property);
-
-                if (column.HeaderTemplate is not null)
-                {
-                    builder.AddAttribute(seq++, "HeaderTemplate", column.HeaderTemplate);
-                }
-                else
-                {
-                    builder.AddAttribute(seq++, "Title", column.Title);
-                }
-
-                builder.AddAttribute(seq++, "Sortable", column.Sortable);
-                builder.AddAttribute(seq++, "Filterable", column.Filterable);
-                builder.AddAttribute(seq++, "Align", column.Align);
-
-                if (!string.IsNullOrWhiteSpace(column.Format))
-                    builder.AddAttribute(seq++, "Format", column.Format);
-
-                if (column.Template is not null)
-                {
-                    builder.AddAttribute(seq++, "CellTemplate", column.Template);
-                }
-
-                builder.CloseComponent();
+                BuildColumnComponent(builder, ref seq, column);
             }
         };
+    }
+    
+    private void BuildColumnComponent(RenderTreeBuilder builder, ref int seq, ColumnConfig<TItem> column)
+    {
+        var componentType = typeof(PropertyColumn<,>)
+            .MakeGenericType(typeof(TItem), column.PropertyType);
+
+        builder.OpenComponent(seq++, componentType);
+        builder.AddAttribute(seq++, "Property", column.Property);
+
+        builder.AddAttribute(seq++, column.HeaderTemplate is not null ? "HeaderTemplate" : "Title",
+            column.HeaderTemplate ?? (object?)column.Title);
+
+        builder.AddAttribute(seq++, "Sortable", column.Sortable);
+        builder.AddAttribute(seq++, "Filterable", column.Filterable);
+        builder.AddAttribute(seq++, "Align", column.Align);
+
+        if (!string.IsNullOrWhiteSpace(column.Format))
+            builder.AddAttribute(seq++, "Format", column.Format);
+
+        if (column.Template is not null)
+            builder.AddAttribute(seq++, "CellTemplate", column.Template);
+
+        builder.CloseComponent();
     }
 
     private ColumnConfig<TItem>? FindColumn<TProp>(Expression<Func<TItem, TProp>> property)

@@ -1,24 +1,15 @@
-@page "/assets"
+@page "/"
 @using MoonGridBuilder.Core
 @using MoonMud.DemoApp.Models
-@using MoonMud.DemoApp.Service
 @using MoonGridBuilder.Core.Components
 
-@inject AssetGridDataService AssetGridDataService
+<MudText Typo="Typo.h4" GutterBottom="true">Title</MudText>
+<MudText Typo="Typo.body1" Class="mb-8">Subtitle</MudText>
 
-<MoonGridBuilder T="AssetReadDto"
-             Title="Assets Management"
-             Subtitle="Manage financial instruments"
-             Options="_options"
-             LoadData="LoadAssets"
-             Columns="AssetColumns" />
+<MoonGridBuilder T="AssetReadDto" Options="_options" Columns="AssetColumns" />
 
 @code {
-    private readonly DataGridOptions _options = new()
-    {
-        Title = "Assets",
-        PageSizeOptions = new[] { 10, 20, 50 }
-    };
+    private readonly DataGridOptions _options = new();
 
     private RenderFragment AssetColumns => ColumnBuilder<AssetReadDto>.For()
         .AddColumn<Guid>(x => x.GlobalId, c =>
@@ -55,14 +46,4 @@
             c.Format = "dd MMM yyyy";
         })
         .Build();
-
-    private async Task<GridData<AssetReadDto>> LoadAssets(GridState<AssetReadDto> state)
-    {
-        var response = await AssetGridDataService.GetPagedAsync(state);
-        return new GridData<AssetReadDto>
-        {
-            Items = response.Items,
-            TotalItems = response.TotalCount
-        };
-    }
 }
