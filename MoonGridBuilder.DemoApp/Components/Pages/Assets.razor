@@ -1,36 +1,24 @@
 @page "/"
-@using MoonGridBuilder.Core
 @using MoonMud.DemoApp.Models
 @using MoonGridBuilder.Core.Components
+@using MoonGridBuilder.Core.DataGrid
 
-<MudText Typo="Typo.h4" GutterBottom="true">Title</MudText>
-<MudText Typo="Typo.body1" Class="mb-8">Subtitle</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Assets</MudText>
+<MudText Typo="Typo.body1" Class="mb-8">All financial instruments</MudText>
 
-<MoonGridBuilder T="AssetReadDto" Options="_options" Columns="AssetColumns" />
+<MoonGridBuilder T="AssetReadDto" Options="_options" Columns="AssetColumns"/>
 
 @code {
     private readonly DataGridOptions _options = new();
 
     private RenderFragment AssetColumns => ColumnBuilder<AssetReadDto>.For()
-        .AddColumn<Guid>(x => x.GlobalId, c =>
-        {
-            c.Title = "ID";
-        })
-        .AddColumn<string>(x => x.Name, c =>
-        {
-            c.Title = "Name";
-        })
-        .AddColumn<string>(x => x.Type, c =>
-        {
-            c.Title = "Type";
-            c.Align = Align.Center;
-            c.Filterable = false;
-        })
+        .AddColumn(x => x.GlobalId, c => { c.Title = "ID"; })
+        .AddColumn<string>(x => x.Name, c => { c.Title = "Name"; })
         .AddColumn<string>(x => x.Symbol, c =>
         {
             c.Title = "Symbol";
             c.Filterable = false;
-            c.HeaderTemplate = ctx => @<MudText Color="Color.Primary">💰 Symbol</MudText>;
+            c.HeaderTemplate = ctx => @<MudText Color="Color.Primary">😝 Symbol</MudText>;
             c.Template = ctx => @<MudText Color="Color.Info">@ctx.Item.Symbol</MudText>;
         })
         .AddColumn<int>(x => x.Precision, c =>
@@ -46,4 +34,5 @@
             c.Format = "dd MMM yyyy";
         })
         .Build();
+
 }

@@ -3,6 +3,9 @@ using MudBlazor.Services;
 using MoonMud.DemoApp.Components;
 using MoonMud.DemoApp.Models;
 using MoonMud.DemoApp.Service;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using MoonMud.DemoApp.Validators;
 
 namespace MoonMud.DemoApp;
 
@@ -12,8 +15,12 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddScoped<AssetDataGridService>();
-        
+
         builder.Services.AddScoped<IDataGridService<AssetReadDto>, AssetDataGridService>();
+
+        builder.Services.AddValidatorsFromAssemblyContaining<AssetCreateDtoValidator>();
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.AddFluentValidationClientsideAdapters();
 
         // Add MudBlazor services
         builder.Services.AddMudServices();

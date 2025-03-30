@@ -1,4 +1,7 @@
 using FluentValidation;
+using MoonGridBuilder.Core;
+using MoonGridBuilder.Core.Components;
+using MoonGridBuilder.Core.Forms;
 using MoonMud.DemoApp.Models;
 
 namespace MoonMud.DemoApp.Validators;
@@ -9,9 +12,6 @@ public class AssetUpdateDtoValidator : BaseMudValidator<AssetUpdateDto>
     {
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Name is required");
-
-        RuleFor(x => x.Type)
-            .NotEmpty().WithMessage("Type is required");
 
         RuleFor(x => x.Symbol)
             .NotEmpty().WithMessage("Symbol is required")

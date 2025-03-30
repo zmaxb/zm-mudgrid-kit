@@ -1,7 +1,10 @@
 @typeparam T where T : class
+
 @using MoonGridBuilder.Core
+@using MoonGridBuilder.Core.DataGrid
 @using MoonGridBuilder.Core.Interfaces
 @using MudBlazor
+
 @inject IDataGridService<T> DataGridService
 @inject IDialogService DialogService
 
@@ -57,18 +60,19 @@
     [Parameter] public RenderFragment? Columns { get; set; }
 
     private MudDataGrid<T> _dataGrid = null!;
-    
+
     protected override void OnInitialized()
     {
         DataGridService.DialogService = DialogService;
     }
+
     private async Task OnAdd()
     {
         await DataGridService.OnAdd();
         await _dataGrid.ReloadServerData();
     }
 
-    private async Task OnEdit(T entiety)
+    private async Task OnEdit(T? entiety)
     {
         if (entiety == null) return;
 
@@ -82,7 +86,7 @@
     {
         var selectedAssets = _dataGrid.SelectedItems.ToList();
         await DataGridService.OnDelete(selectedAssets);
-        
+
         await _dataGrid.ReloadServerData();
     }
 

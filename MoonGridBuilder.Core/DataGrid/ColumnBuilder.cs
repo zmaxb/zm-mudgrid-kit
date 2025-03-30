@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
 
-namespace MoonGridBuilder.Core;
+namespace MoonGridBuilder.Core.DataGrid;
 
 public class ColumnBuilder<TItem>
 {
@@ -99,7 +99,7 @@ public class ColumnBuilder<TItem>
         return builder =>
         {
             var seq = 0;
-            
+
             builder.OpenComponent(seq++, typeof(SelectColumn<>).MakeGenericType(typeof(TItem)));
             builder.CloseComponent();
 
@@ -110,7 +110,7 @@ public class ColumnBuilder<TItem>
             }
         };
     }
-    
+
     private void BuildColumnComponent(RenderTreeBuilder builder, ref int seq, ColumnConfig<TItem> column)
     {
         var componentType = typeof(PropertyColumn<,>)

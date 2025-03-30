@@ -1,6 +1,6 @@
 using FluentValidation;
 
-namespace MoonMud.DemoApp.Validators;
+namespace MoonGridBuilder.Core.Forms;
 
 public abstract class BaseMudValidator<T> : AbstractValidator<T>
 {

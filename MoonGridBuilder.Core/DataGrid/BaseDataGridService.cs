@@ -2,7 +2,7 @@ using FluentValidation;
 using MoonGridBuilder.Core.Interfaces;
 using MudBlazor;
 
-namespace MoonGridBuilder.Core;
+namespace MoonGridBuilder.Core.DataGrid;
 
 public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGridService<T>
     where T : class
@@ -14,11 +14,6 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGrid
 
     protected virtual IValidator<TCreateDto>? CreateValidator => null;
     protected virtual IValidator<TUpdateDto>? UpdateValidator => null;
-
-    private static readonly DialogOptions _dialogOptions = new()
-    {
-        CloseOnEscapeKey = true
-    };
 
     public virtual Task OnSearch(string searchText)
     {
@@ -42,7 +37,7 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGrid
         var dialog = await DialogService.ShowAsync(AddDialog, "Add", new DialogOptions { CloseOnEscapeKey = true });
         var result = await dialog.Result;
 
-        if (result.Canceled || result.Data is not object createDto)
+        if (result is not { Canceled: false, Data: { } createDto })
             return;
 
         if (CreateValidator is not null)
@@ -56,32 +51,33 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGrid
         Items.Add(entity);
     }
 
-    
     public async Task OnEdit(T entity)
     {
         if (DialogService is null) return;
 
-        var parameters = new DialogParameters { ["Entity"] = entity };
-        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters, new DialogOptions { CloseOnEscapeKey = true });
+        var dto = MapToUpdateDto(entity);
+
+        var parameters = new DialogParameters
+        {
+            ["Entity"] = dto
+        };
+
+        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters,
+            new DialogOptions { CloseOnEscapeKey = true });
         var result = await dialog.Result;
 
-        if (result.Canceled || result.Data is not (Guid id, object updateDto))
+        if (result is not { Canceled: false, Data: TUpdateDto updateDto })
             return;
 
         if (UpdateValidator is not null)
         {
-            var validation = await UpdateValidator.ValidateAsync((TUpdateDto)updateDto);
+            var validation = await UpdateValidator.ValidateAsync(updateDto);
             if (!validation.IsValid)
                 return;
         }
 
-
-        var existing = FindById(id);
-        if (existing != null)
-            ApplyUpdate(existing, updateDto);
+        ApplyUpdate(entity, updateDto);
     }
-
-
 
     public virtual Task OnDelete(List<T> items)
     {
@@ -89,6 +85,28 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGrid
             Items.Remove(item);
 
         return Task.CompletedTask;
+    }
+
+    protected virtual TUpdateDto MapToUpdateDto(T entity)
+    {
+        var updateDto = Activator.CreateInstance<TUpdateDto>();
+        var sourceProps = typeof(T).GetProperties();
+        var targetProps = typeof(TUpdateDto).GetProperties();
+
+        foreach (var targetProp in targetProps)
+        {
+            var sourceProp = sourceProps.FirstOrDefault(p =>
+                p.Name == targetProp.Name &&
+                p.PropertyType == targetProp.PropertyType);
+
+            if (sourceProp != null)
+            {
+                var value = sourceProp.GetValue(entity);
+                targetProp.SetValue(updateDto, value);
+            }
+        }
+
+        return updateDto!;
     }
 
     protected abstract Type AddDialog { get; }

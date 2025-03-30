@@ -7,10 +7,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <RazorComponent Include="Components\MoonGridBuilder.razor" />
-    </ItemGroup>
-
-    <ItemGroup>
         <PackageReference Include="FluentValidation" Version="11.11.0" />
         <PackageReference Include="MudBlazor" Version="8.3.0" />
         <PackageReference Include="MudBlazor.Extensions" Version="8.3.1" />

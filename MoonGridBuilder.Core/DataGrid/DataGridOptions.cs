@@ -1,4 +1,4 @@
-namespace MoonGridBuilder.Core;
+namespace MoonGridBuilder.Core.DataGrid;
 
 public class DataGridOptions
 {

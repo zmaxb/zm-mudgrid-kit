@@ -1,0 +1,29 @@
+@typeparam TModel
+@typeparam TValidator where TValidator : FluentValidation.IValidator<TModel>, new()
+@using MudBlazor
+
+<AutoForm TModel="TModel"
+          TValidator="TValidator"
+          Title="@($"AutoForm - {typeof(TModel).Name}")"
+          Model="_model"
+          OnSave="HandleSave"/>
+
+@code {
+    [Parameter] public TModel? Entity { get; set; } // <- вот оно, официально
+
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+
+    private TModel _model = default!;
+
+    protected override void OnInitialized()
+    {
+        _model = Entity ?? Activator.CreateInstance<TModel>();
+    }
+
+    private async Task HandleSave(TModel model)
+    {
+        MudDialog.Close(DialogResult.Ok(model));
+        await Task.CompletedTask;
+    }
+
+}

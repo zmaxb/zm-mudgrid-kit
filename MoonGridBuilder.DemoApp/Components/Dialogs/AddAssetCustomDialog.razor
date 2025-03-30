@@ -4,7 +4,7 @@
 
 <MudDialog>
     <TitleContent>
-        Add New Asset
+        Add New Asset (custom dialog)
     </TitleContent>
 
     <DialogContent>
@@ -14,21 +14,14 @@
                     <MudTextField Label="Name"
                                   For="@(() => _newAsset.Name)"
                                   @bind-Value="_newAsset.Name"
-                                  Immediate="true" />
-                </MudItem>
-
-                <MudItem xs="12" md="6">
-                    <MudTextField Label="Type"
-                                  For="@(() => _newAsset.Type)"
-                                  @bind-Value="_newAsset.Type"
-                                  Immediate="true" />
+                                  Immediate="true"/>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
                     <MudTextField Label="Symbol"
                                   For="@(() => _newAsset.Symbol)"
                                   @bind-Value="_newAsset.Symbol"
-                                  Immediate="true" />
+                                  Immediate="true"/>
                 </MudItem>
 
                 <MudItem xs="12" md="6">
@@ -36,17 +29,17 @@
                                      For="@(() => _newAsset.Precision)"
                                      @bind-Value="_newAsset.Precision"
                                      Immediate="true"
-                                     Min="0" />
+                                     Min="0"/>
                 </MudItem>
             </MudGrid>
 
             <MudStack Row Spacing="2" Class="mt-6">
                 <MudButton OnClick="CloseDialog" Color="Color.Secondary">Cancel</MudButton>
-                <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Save</MudButton>
+                <MudButton OnClick="Submit" Variant="Variant.Filled" Color="Color.Primary" Class="ml-auto">Save
+                </MudButton>
             </MudStack>
 
-         
-            
+
         </MudForm>
     </DialogContent>
 </MudDialog>
@@ -72,8 +65,6 @@
         }
     }
 
-    private void CloseDialog()
-    {
-        MudDialog.Cancel();
-    }
+    private void CloseDialog() => MudDialog.Cancel();
+
 }
