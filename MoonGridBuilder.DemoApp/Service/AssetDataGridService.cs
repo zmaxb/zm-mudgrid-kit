@@ -25,55 +25,27 @@ public class AssetDataGridService
     }
 
     protected override Type AddDialog =>
-        typeof(AddAssetCustomDialog); // Use custom form
+        typeof(AddAssetCustomDialog);
 
     protected override Type EditDialog =>
-        AutoFormWrapper.Create<AssetUpdateDto, AssetUpdateDtoValidator>(); // Use AutoForm
+        AutoFormWrapper.Create<AssetUpdateDto, AssetUpdateDtoValidator>();
 
-    protected override string Title => "Edit Asset";
+    protected override string Title => "Assets";
+
+    protected override AssetUpdateDto MapToUpdateDto(AssetReadDto entity) => new()
+    {
+        Name = entity.Name,
+        Symbol = entity.Symbol,
+        Precision = entity.Precision
+    };
 
     protected override IValidator<AssetCreateDto> CreateValidator =>
         new AssetCreateDtoValidator();
 
     protected override IValidator<AssetUpdateDto> UpdateValidator =>
         new AssetUpdateDtoValidator();
-    
-    public override Task<GridData<AssetReadDto>> LoadData(GridState<AssetReadDto> state)
-    {
-        IEnumerable<AssetReadDto> query = Items;
 
-        if (!string.IsNullOrWhiteSpace(Search))
-        {
-            query = query.Where(x =>
-                x.Name.Contains(Search, StringComparison.OrdinalIgnoreCase) ||
-                x.Symbol.Contains(Search, StringComparison.OrdinalIgnoreCase));
-        }
-
-        var assetReadDtos = query.ToList();
-        var totalItems = assetReadDtos.Count();
-        
-        var data = assetReadDtos
-            .Skip(state.Page * state.PageSize)
-            .Take(state.PageSize)
-            .ToList();
-
-        return Task.FromResult(new GridData<AssetReadDto>
-        {
-            Items = data,
-            TotalItems = totalItems
-        });
-    }
-
-
-    protected override void ApplyUpdate(AssetReadDto existing, object updateDto)
-    {
-        var dto = (AssetUpdateDto)updateDto;
-        existing.Name = dto.Name;
-        existing.Symbol = dto.Symbol;
-        existing.Precision = dto.Precision;
-    }
-
-    protected override AssetReadDto CreateFrom(object createDto)
+    protected override AssetReadDto CreateEntityFromDto(object createDto)
     {
         var dto = (AssetCreateDto)createDto;
 
@@ -87,12 +59,56 @@ public class AssetDataGridService
         };
     }
 
+    protected override Task ApplyUpdateToEntity(AssetReadDto existing, object updateDto)
+    {
+        var dto = (AssetUpdateDto)updateDto;
+
+        existing.Name = dto.Name;
+        existing.Symbol = dto.Symbol;
+        existing.Precision = dto.Precision;
+
+        return Task.CompletedTask;
+    }
+
     public override Task OnSearch(string searchText)
     {
         Search = searchText;
         return Task.CompletedTask;
     }
 
-    protected override AssetReadDto? FindById(Guid id)
-        => Items.FirstOrDefault(x => x.GlobalId == id);
+    public override Task<GridData<AssetReadDto>> LoadData(GridState<AssetReadDto> state)
+    {
+        IEnumerable<AssetReadDto> query = Items;
+
+        if (!string.IsNullOrWhiteSpace(Search))
+        {
+            query = query.Where(x =>
+                x.Name.Contains(Search, StringComparison.OrdinalIgnoreCase) ||
+                x.Symbol.Contains(Search, StringComparison.OrdinalIgnoreCase));
+        }
+
+        var sort = state.SortDefinitions.FirstOrDefault();
+        if (sort is not null)
+        {
+            var prop = typeof(AssetReadDto).GetProperty(sort.SortBy ?? "");
+            if (prop is not null)
+            {
+                query = sort.Descending
+                    ? query.OrderByDescending(x => prop.GetValue(x))
+                    : query.OrderBy(x => prop.GetValue(x));
+            }
+        }
+
+        var paged = query
+            .Skip(state.Page * state.PageSize)
+            .Take(state.PageSize)
+            .ToList();
+
+        return Task.FromResult(new GridData<AssetReadDto>
+        {
+            Items = paged,
+            TotalItems = query.Count()
+        });
+    }
+
 }

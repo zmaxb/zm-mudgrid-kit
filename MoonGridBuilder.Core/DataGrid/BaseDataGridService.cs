@@ -1,118 +1,37 @@
-using FluentValidation;
-using MoonGridBuilder.Core.Interfaces;
 using MudBlazor;
 
 namespace MoonGridBuilder.Core.DataGrid;
 
-public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto> : IDataGridService<T>
+public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto>
+    : AbstractDataGridService<T, TCreateDto, TUpdateDto>
     where T : class
 {
-    protected List<T> Items { get; } = new();
-    protected string Search = string.Empty;
+    protected List<T> Items { get; } = [];
 
-    public IDialogService? DialogService { get; set; }
+    public override Task<GridData<T>> LoadData(GridState<T> state)
+        => Task.FromResult(new GridData<T> { Items = Items, TotalItems = Items.Count });
 
-    protected virtual IValidator<TCreateDto>? CreateValidator => null;
-    protected virtual IValidator<TUpdateDto>? UpdateValidator => null;
-
-    public virtual Task OnSearch(string searchText)
+    protected override Task OnCreate(object createDto)
     {
-        Search = searchText;
+        var entity = CreateEntityFromDto(createDto);
+        Items.Add(entity);
         return Task.CompletedTask;
     }
 
-    public virtual Task<GridData<T>> LoadData(GridState<T> state)
-    {
-        return Task.FromResult(new GridData<T>
-        {
-            Items = Items,
-            TotalItems = Items.Count
-        });
-    }
+    protected override Task OnUpdate(T existing, object updateDto)
+        => ApplyUpdateToEntity(existing, updateDto);
 
-    public async Task OnAdd()
-    {
-        if (DialogService is null) return;
-
-        var dialog = await DialogService.ShowAsync(AddDialog, "Add", new DialogOptions { CloseOnEscapeKey = true });
-        var result = await dialog.Result;
-
-        if (result is not { Canceled: false, Data: { } createDto })
-            return;
-
-        if (CreateValidator is not null)
-        {
-            var validation = await CreateValidator.ValidateAsync((TCreateDto)createDto);
-            if (!validation.IsValid)
-                return;
-        }
-
-        var entity = CreateFrom(createDto);
-        Items.Add(entity);
-    }
-
-    public async Task OnEdit(T entity)
-    {
-        if (DialogService is null) return;
-
-        var dto = MapToUpdateDto(entity);
-
-        var parameters = new DialogParameters
-        {
-            ["Entity"] = dto
-        };
-
-        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters,
-            new DialogOptions { CloseOnEscapeKey = true });
-        var result = await dialog.Result;
-
-        if (result is not { Canceled: false, Data: TUpdateDto updateDto })
-            return;
-
-        if (UpdateValidator is not null)
-        {
-            var validation = await UpdateValidator.ValidateAsync(updateDto);
-            if (!validation.IsValid)
-                return;
-        }
-
-        ApplyUpdate(entity, updateDto);
-    }
-
-    public virtual Task OnDelete(List<T> items)
+    protected override Task OnDeleteInternal(List<T> items)
     {
         foreach (var item in items)
             Items.Remove(item);
 
-        return Task.CompletedTask;
+        return OnDeleteEntities(items);
     }
 
-    protected virtual TUpdateDto MapToUpdateDto(T entity)
-    {
-        var updateDto = Activator.CreateInstance<TUpdateDto>();
-        var sourceProps = typeof(T).GetProperties();
-        var targetProps = typeof(TUpdateDto).GetProperties();
+    protected abstract T CreateEntityFromDto(object createDto);
 
-        foreach (var targetProp in targetProps)
-        {
-            var sourceProp = sourceProps.FirstOrDefault(p =>
-                p.Name == targetProp.Name &&
-                p.PropertyType == targetProp.PropertyType);
+    protected abstract Task ApplyUpdateToEntity(T existing, object updateDto);
 
-            if (sourceProp != null)
-            {
-                var value = sourceProp.GetValue(entity);
-                targetProp.SetValue(updateDto, value);
-            }
-        }
-
-        return updateDto!;
-    }
-
-    protected abstract Type AddDialog { get; }
-    protected abstract Type EditDialog { get; }
-    protected abstract string Title { get; }
-    protected abstract void ApplyUpdate(T existing, object updateDto);
-    protected abstract T CreateFrom(object createDto);
-    protected abstract T? FindById(Guid id);
+    protected virtual Task OnDeleteEntities(List<T> items) => Task.CompletedTask;
 }

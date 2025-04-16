@@ -44,7 +44,15 @@
         var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
         var value = prop.GetValue(Model);
 
-        if (type == typeof(int) || type == typeof(decimal) || type == typeof(double) || type == typeof(float))
+        if (type.IsEnum)
+        {
+            var method = typeof(AutoForm<TModel, TValidator>)
+                .GetMethod(nameof(RenderEnumField), BindingFlags.NonPublic | BindingFlags.Instance)!
+                .MakeGenericMethod(type);
+
+            method.Invoke(this, [builder, prop]);
+        }
+        else if (type == typeof(int) || type == typeof(decimal) || type == typeof(double) || type == typeof(float))
         {
             var method = typeof(AutoForm<TModel, TValidator>)
                 .GetMethod(nameof(RenderNumericField), BindingFlags.NonPublic | BindingFlags.Instance)!
@@ -67,6 +75,23 @@
             builder.CloseComponent();
         }
     };
+    
+    private static string GetEnumDisplayName<TEnum>(TEnum value) where TEnum : Enum
+    {
+        var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
+        if (member == null) return value.ToString();
+
+        var displayAttr = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>();
+        if (displayAttr != null)
+            return displayAttr.Name ?? value.ToString();
+
+        var descAttr = member.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+        if (descAttr != null)
+            return descAttr.Description;
+
+        return value.ToString();
+    }
+
 
     private void RenderNumericField<T>(RenderTreeBuilder builder, PropertyInfo prop)
     {
@@ -80,6 +105,39 @@
             StateHasChanged();
         }));
         builder.AddAttribute(5, "Validation", GetValidatorForProperty<T>(prop.Name));
+        builder.CloseComponent();
+    }
+    
+    private void RenderEnumField<TEnum>(RenderTreeBuilder builder, PropertyInfo prop) where TEnum : Enum
+    {
+        var currentValue = (TEnum?)prop.GetValue(Model);
+        var items = Enum.GetValues(typeof(TEnum)).Cast<TEnum>().ToList();
+
+        builder.OpenComponent(0, typeof(MudSelect<TEnum>));
+        builder.AddAttribute(1, "Label", prop.Name);
+        builder.AddAttribute(2, "Value", currentValue);
+        builder.AddAttribute(3, "ValueChanged", EventCallback.Factory.Create<TEnum>(this, val =>
+        {
+            prop.SetValue(Model, val);
+            StateHasChanged();
+        }));
+        builder.AddAttribute(4, "Validation", GetValidatorForProperty<TEnum>(prop.Name));
+        builder.AddAttribute(5, "Dense", true);
+
+        builder.AddAttribute(6, "ChildContent", (RenderFragment)(childBuilder =>
+        {
+            foreach (var item in items)
+            {
+                childBuilder.OpenComponent(0, typeof(MudSelectItem<TEnum>));
+                childBuilder.AddAttribute(1, "Value", item);
+                childBuilder.AddAttribute(2, "ChildContent", (RenderFragment)(contentBuilder =>
+                {
+                    contentBuilder.AddContent(3, GetEnumDisplayName(item));
+                }));
+                childBuilder.CloseComponent();
+            }
+        }));
+
         builder.CloseComponent();
     }
 
