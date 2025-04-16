@@ -1,6 +1,5 @@
 @typeparam T where T : class
 
-@using MoonGridBuilder.Core
 @using MoonGridBuilder.Core.DataGrid
 @using MoonGridBuilder.Core.Interfaces
 @using MudBlazor
@@ -74,9 +73,11 @@
 
     private async Task OnEdit(T? entiety)
     {
-        if (entiety == null) return;
+        if (entiety == null)
+            return;
 
         await DataGridService.OnEdit(entiety);
+
         _dataGrid.SelectedItems.Clear();
         await _dataGrid.ReloadServerData();
     }
@@ -87,6 +88,7 @@
         var selectedAssets = _dataGrid.SelectedItems.ToList();
         await DataGridService.OnDelete(selectedAssets);
 
+        _dataGrid.SelectedItems.Clear();
         await _dataGrid.ReloadServerData();
     }
 
