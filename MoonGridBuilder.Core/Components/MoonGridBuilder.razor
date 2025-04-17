@@ -14,7 +14,7 @@
              SortMode="SortMode.Multiple"
              Hideable="true"
              RowsPerPage="Options.DefaultPageSize"
-             ServerData="DataGridService.LoadData"
+             ServerData="WrappedServerLoadData"
              ShowMenuIcon="Options.ShowMenuIcon"
              ShowColumnOptions="Options.ShowColumnOptions"
              ShowFilterIcons="Options.ShowFilterIcons">
@@ -38,6 +38,10 @@
                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium" Class="mt-0"></MudTextField>
         }
+        @if (TopRightContent is not null)
+        {
+            @TopRightContent
+        }
     </ToolBarContent>
 
     <Columns>
@@ -54,11 +58,19 @@
 </MudDataGrid>
 
 @code {
-
+    
     [Parameter] public required DataGridOptions Options { get; set; }
     [Parameter] public RenderFragment? Columns { get; set; }
+    [Parameter] public RenderFragment? TopRightContent { get; set; }
 
     private MudDataGrid<T> _dataGrid = null!;
+    
+    private async Task<GridData<T>> WrappedServerLoadData(GridState<T> state)
+    {
+        _dataGrid.SelectedItems.Clear();
+        return await DataGridService.LoadData(state);
+    }
+
 
     protected override void OnInitialized()
     {
@@ -77,8 +89,6 @@
             return;
 
         await DataGridService.OnEdit(entiety);
-
-        _dataGrid.SelectedItems.Clear();
         await _dataGrid.ReloadServerData();
     }
 
@@ -87,8 +97,6 @@
     {
         var selectedAssets = _dataGrid.SelectedItems.ToList();
         await DataGridService.OnDelete(selectedAssets);
-
-        _dataGrid.SelectedItems.Clear();
         await _dataGrid.ReloadServerData();
     }
 
@@ -99,6 +107,11 @@
             await DataGridService.OnSearch(searchText);
         }
 
+        await _dataGrid.ReloadServerData();
+    }
+    
+    public async Task ReloadAsync()
+    {
         await _dataGrid.ReloadServerData();
     }
 
