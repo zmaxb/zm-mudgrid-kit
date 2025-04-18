@@ -64,6 +64,16 @@ public class ColumnBuilder<TItem>
 
         return this;
     }
+    
+    public ColumnBuilder<TItem> AddColumnsIf(bool condition, Action<ColumnBuilder<TItem>> columns)
+    {
+        if (condition)
+        {
+            columns(this);
+        }
+
+        return this;
+    }
 
     private static Type GetPropertyType(LambdaExpression expr)
     {
