@@ -4,7 +4,7 @@ using Zm.MudGridKit.Forms;
 
 namespace Zm.MudGridKit.DemoApp.Validators;
 
-public class AssetUpdateDtoValidator : BaseMudValidator<AssetUpdateDto>
+public class AssetUpdateDtoValidator : BaseGridValidator<AssetUpdateDto>
 {
     public AssetUpdateDtoValidator()
     {
