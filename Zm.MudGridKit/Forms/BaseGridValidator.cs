@@ -2,7 +2,7 @@ using FluentValidation;
 
 namespace Zm.MudGridKit.Forms;
 
-public abstract class BaseMudValidator<T> : AbstractValidator<T>
+public abstract class BaseGridValidator<T> : AbstractValidator<T>
 {
     public Func<object, string, Task<IEnumerable<string>>> ValidateValue =>
         async (model, propertyName) =>
