@@ -1,4 +1,5 @@
 using System.Linq.Expressions;
+using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
@@ -43,6 +44,7 @@ public class ColumnBuilder<TItem>
         if (config.Property == null)
             throw new InvalidOperationException("Column must have a Property defined.");
 
+        config.PropertyType ??= GetPropertyType(config.Property);
         _columns.Add(config);
 
         return this;
@@ -77,7 +79,7 @@ public class ColumnBuilder<TItem>
     private static Type GetPropertyType(LambdaExpression expr)
     {
         var member = expr.Body as MemberExpression;
-        var propertyInfo = member?.Member as System.Reflection.PropertyInfo;
+        var propertyInfo = member?.Member as PropertyInfo;
         return propertyInfo?.PropertyType ?? typeof(object);
     }
 
@@ -112,8 +114,9 @@ public class ColumnBuilder<TItem>
             builder.OpenComponent(seq++, typeof(SelectColumn<>).MakeGenericType(typeof(TItem)));
             builder.CloseComponent();
 
-            foreach (var column in _columns.Where(column => column.Visible))
+            foreach (var column in _columns)
             {
+                if (!column.Visible) continue;
                 BuildColumnComponent(builder, ref seq, column);
             }
         };

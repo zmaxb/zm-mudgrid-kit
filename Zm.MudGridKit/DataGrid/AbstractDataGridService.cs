@@ -8,7 +8,7 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
     where T : class
 {
     public IDialogService? DialogService { get; set; }
-    
+
     protected string Search { get; set; } = string.Empty;
 
     protected virtual IValidator<TCreateDto>? CreateValidator => null;
@@ -16,11 +16,17 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
 
     public abstract Task<GridData<T>> LoadData(GridState<T> state);
 
+    public virtual Task OnSearch(string searchText)
+    {
+        Search = searchText;
+        return Task.CompletedTask;
+    }
+
     public async Task OnAdd()
     {
         if (DialogService is null) return;
 
-        var dialog = await DialogService.ShowAsync(AddDialog, "Add", new DialogOptions { CloseOnEscapeKey = true });
+        var dialog = await DialogService.ShowAsync(AddDialog, "Add", AddDialogOptions);
         var result = await dialog.Result;
 
         if (result is not { Canceled: false, Data: { } createDto }) return;
@@ -38,11 +44,10 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
     {
         if (DialogService is null) return;
 
-        var dto = MapToUpdateDto(entity);
+        var dto = await MapToUpdateModelAsync(entity);
         var parameters = new DialogParameters { ["Entity"] = dto };
 
-        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters,
-            new DialogOptions { CloseOnEscapeKey = true });
+        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters, EditDialogOptions);
         var result = await dialog.Result;
 
         if (result is not { Canceled: false, Data: TUpdateDto updateDto }) return;
@@ -60,25 +65,29 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
     {
         await OnDeleteInternal(items);
     }
-    
-    public virtual Task OnSearch(string searchText)
-    {
-        Search = searchText;
-        return Task.CompletedTask;
-    }
-    
+
     protected abstract Task OnCreate(object createDto);
-
     protected abstract Task OnUpdate(T existing, object updateDto);
-
     protected abstract Task OnDeleteInternal(List<T> items);
 
-    protected abstract Type AddDialog { get; }
+    protected abstract Task<TUpdateDto> MapToUpdateModelAsync(T entity);
 
+    protected abstract Type AddDialog { get; }
     protected abstract Type EditDialog { get; }
 
     protected abstract string Title { get; }
 
-    protected abstract TUpdateDto MapToUpdateDto(T entity);
-    
+    protected virtual DialogOptions AddDialogOptions => new()
+    {
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true
+    };
+
+    protected virtual DialogOptions EditDialogOptions => new()
+    {
+        CloseOnEscapeKey = true,
+        MaxWidth = MaxWidth.Medium,
+        FullWidth = true
+    };
 }

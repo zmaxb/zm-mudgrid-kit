@@ -1,11 +1,12 @@
 @typeparam TModel
-@typeparam TValidator where TValidator : IValidator<TModel>, new()
-
+@using System.ComponentModel
+@using System.ComponentModel.DataAnnotations
 @using System.Reflection
 @using FluentValidation
 @using FluentValidation.Internal
 @using Microsoft.AspNetCore.Components.Rendering
 @using MudBlazor
+@typeparam TValidator where TValidator : FluentValidation.IValidator<TModel>, new()
 
 <div class="pa-4">
     <MudForm @ref="_form">
@@ -81,11 +82,11 @@
         var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
         if (member == null) return value.ToString();
 
-        var displayAttr = member.GetCustomAttribute<System.ComponentModel.DataAnnotations.DisplayAttribute>();
+        var displayAttr = member.GetCustomAttribute<DisplayAttribute>();
         if (displayAttr != null)
             return displayAttr.Name ?? value.ToString();
 
-        var descAttr = member.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
+        var descAttr = member.GetCustomAttribute<DescriptionAttribute>();
         return descAttr != null ? descAttr.Description : value.ToString();
     }
 

@@ -32,12 +32,15 @@ public class AssetDataGridService
 
     protected override string Title => "Assets";
 
-    protected override AssetUpdateDto MapToUpdateDto(AssetReadDto entity) => new()
+    protected override async Task<AssetUpdateDto> MapToUpdateModelAsync(AssetReadDto entity)
     {
-        Name = entity.Name,
-        Symbol = entity.Symbol,
-        Precision = entity.Precision
-    };
+        return await Task.FromResult(new AssetUpdateDto
+        {
+            Name = entity.Name,
+            Symbol = entity.Symbol,
+            Precision = entity.Precision
+        });
+    }
 
     protected override IValidator<AssetCreateDto> CreateValidator =>
         new AssetCreateDtoValidator();
