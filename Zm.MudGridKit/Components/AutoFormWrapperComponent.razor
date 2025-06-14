@@ -9,9 +9,9 @@
           OnSave="HandleSave"/>
 
 @code {
-    [Parameter] public TModel? Entity { get; set; } // <- вот оно, официально
+    [Parameter] public TModel? Entity { get; set; }
 
-    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = default!;
+    [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private TModel _model = default!;
 

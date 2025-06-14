@@ -86,10 +86,7 @@
             return displayAttr.Name ?? value.ToString();
 
         var descAttr = member.GetCustomAttribute<System.ComponentModel.DescriptionAttribute>();
-        if (descAttr != null)
-            return descAttr.Description;
-
-        return value.ToString();
+        return descAttr != null ? descAttr.Description : value.ToString();
     }
 
 

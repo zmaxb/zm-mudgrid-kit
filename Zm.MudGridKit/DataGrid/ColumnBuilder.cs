@@ -43,7 +43,6 @@ public class ColumnBuilder<TItem>
         if (config.Property == null)
             throw new InvalidOperationException("Column must have a Property defined.");
 
-        config.PropertyType ??= GetPropertyType(config.Property);
         _columns.Add(config);
 
         return this;
@@ -113,9 +112,8 @@ public class ColumnBuilder<TItem>
             builder.OpenComponent(seq++, typeof(SelectColumn<>).MakeGenericType(typeof(TItem)));
             builder.CloseComponent();
 
-            foreach (var column in _columns)
+            foreach (var column in _columns.Where(column => column.Visible))
             {
-                if (!column.Visible) continue;
                 BuildColumnComponent(builder, ref seq, column);
             }
         };
@@ -153,14 +151,14 @@ public class ColumnBuilder<TItem>
 
     public class ColumnConfig<T>
     {
-        public LambdaExpression Property { get; set; } = default!;
+        public LambdaExpression Property { get; set; } = null!;
         public string Title { get; set; } = string.Empty;
         public bool Sortable { get; set; } = true;
         public bool Filterable { get; set; } = true;
         public Align Align { get; set; } = Align.Left;
         public string? Format { get; set; }
         public bool Visible { get; set; } = true;
-        public Type PropertyType { get; set; } = default!;
+        public Type PropertyType { get; set; } = null!;
         public RenderFragment<CellContext<TItem>>? Template { get; set; }
         public RenderFragment<HeaderContext<TItem>>? HeaderTemplate { get; set; }
 

@@ -14,7 +14,7 @@ public abstract class BaseGridValidator<T> : AbstractValidator<T>
             var result = await ValidateAsync(context);
 
             return result.IsValid
-                ? Array.Empty<string>()
+                ? []
                 : result.Errors.Select(e => e.ErrorMessage);
         };
 }
