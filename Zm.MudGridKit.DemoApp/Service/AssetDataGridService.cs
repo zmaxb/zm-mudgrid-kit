@@ -29,9 +29,7 @@ public class AssetDataGridService
 
     protected override Type EditDialog =>
         AutoFormWrapper.Create<AssetUpdateDto, AssetUpdateDtoValidator>();
-
-    protected override string Title => "Assets";
-
+    
     protected override async Task<AssetUpdateDto> MapToUpdateModelAsync(AssetReadDto entity)
     {
         return await Task.FromResult(new AssetUpdateDto

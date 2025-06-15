@@ -47,7 +47,7 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
         var dto = await MapToUpdateModelAsync(entity);
         var parameters = new DialogParameters { ["Entity"] = dto };
 
-        var dialog = await DialogService.ShowAsync(EditDialog, Title, parameters, EditDialogOptions);
+        var dialog = await DialogService.ShowAsync(EditDialog, "Edit", parameters, EditDialogOptions);
         var result = await dialog.Result;
 
         if (result is not { Canceled: false, Data: TUpdateDto updateDto }) return;
@@ -74,20 +74,17 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
 
     protected abstract Type AddDialog { get; }
     protected abstract Type EditDialog { get; }
-
-    protected abstract string Title { get; }
-
-    protected virtual DialogOptions AddDialogOptions => new()
+    
+    protected virtual DialogOptions DefaultDialogOptions => new()
     {
         CloseOnEscapeKey = true,
+        FullWidth = true,
         MaxWidth = MaxWidth.Medium,
-        FullWidth = true
+        CloseButton = true
     };
 
-    protected virtual DialogOptions EditDialogOptions => new()
-    {
-        CloseOnEscapeKey = true,
-        MaxWidth = MaxWidth.Medium,
-        FullWidth = true
-    };
+    protected virtual DialogOptions AddDialogOptions => DefaultDialogOptions;
+
+    protected virtual DialogOptions EditDialogOptions => DefaultDialogOptions;
+
 }

@@ -6,7 +6,7 @@
 <MudText Typo="Typo.h4" GutterBottom="true">Assets</MudText>
 <MudText Typo="Typo.body1" Class="mb-8">All financial instruments</MudText>
 
-<DataGridBuilder T="AssetReadDto" Options="_options" Columns="AssetColumns"/>
+<ZmMudDataGrid T="AssetReadDto" Options="_options" Columns="AssetColumns"/>
 
 @code {
     private readonly DataGridOptions _options = new();

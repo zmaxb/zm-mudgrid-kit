@@ -9,12 +9,13 @@
 @typeparam TValidator where TValidator : FluentValidation.IValidator<TModel>, new()
 
 <div class="pa-4">
+    
     <MudForm @ref="_form">
-        <MudGrid gutter-size="2">
+        <MudGrid GutterSize="2">
             @foreach (var prop in Properties)
             {
                 <MudItem xs="12" md="6">
-                    @RenderField(prop)
+                    @RenderDynamicField(prop)
                 </MudItem>
             }
         </MudGrid>
@@ -35,38 +36,62 @@
     [Parameter] public string Title { get; set; } = "Auto Form";
     [Parameter] public TModel Model { get; set; } = default!;
     [Parameter] public EventCallback<TModel> OnSave { get; set; }
+    [Parameter] public Dictionary<string, List<(Guid Id, string Name)>>? GuidSelectors { get; set; }
+
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
     private MudForm _form = null!;
-    private PropertyInfo[] Properties => typeof(TModel).GetProperties(BindingFlags.Public | BindingFlags.Instance);
+    private readonly TValidator _validator = new();
 
-    private RenderFragment RenderField(PropertyInfo prop) => builder =>
+    private PropertyInfo[] Properties => typeof(TModel)
+        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+        .OrderBy(p => p.GetCustomAttribute<DisplayAttribute>()?.Order ?? int.MaxValue)
+        .ToArray();
+
+    private RenderFragment RenderDynamicField(PropertyInfo prop) => builder =>
     {
         var type = Nullable.GetUnderlyingType(prop.PropertyType) ?? prop.PropertyType;
         var value = prop.GetValue(Model);
 
         if (type.IsEnum)
         {
-            var method = typeof(AutoForm<TModel, TValidator>)
+            typeof(AutoForm<TModel, TValidator>)
                 .GetMethod(nameof(RenderEnumField), BindingFlags.NonPublic | BindingFlags.Instance)!
-                .MakeGenericMethod(type);
-
-            method.Invoke(this, [builder, prop]);
+                .MakeGenericMethod(type)
+                .Invoke(this, [builder, prop]);
+        }
+        else if (type == typeof(Guid))
+        {
+            if (GuidSelectors != null && GuidSelectors.TryGetValue(prop.Name, out var options))
+            {
+                RenderGuidSelect(builder, prop, options);
+            }
+            else
+            {
+                RenderGuidField(builder, prop);
+            }
+        }
+        else if (type == typeof(DateTime))
+        {
+            RenderDateTimeField(builder, prop);
+        }
+        else if (type == typeof(bool))
+        {
+            RenderBoolField(builder, prop);
         }
         else if (type == typeof(int) || type == typeof(decimal) || type == typeof(double) || type == typeof(float))
         {
-            var method = typeof(AutoForm<TModel, TValidator>)
+            typeof(AutoForm<TModel, TValidator>)
                 .GetMethod(nameof(RenderNumericField), BindingFlags.NonPublic | BindingFlags.Instance)!
-                .MakeGenericMethod(type);
-
-            method.Invoke(this, [builder, prop]);
+                .MakeGenericMethod(type)
+                .Invoke(this, [builder, prop]);
         }
         else
         {
             builder.OpenComponent(0, typeof(MudTextField<string>));
             builder.AddAttribute(1, "Label", prop.Name);
             builder.AddAttribute(2, "Immediate", true);
-            builder.AddAttribute(3, "Value", (string?)value);
+            builder.AddAttribute(3, "Value", value?.ToString() ?? string.Empty);
             builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<string>(this, val =>
             {
                 prop.SetValue(Model, val);
@@ -76,20 +101,85 @@
             builder.CloseComponent();
         }
     };
-    
-    private static string GetEnumDisplayName<TEnum>(TEnum value) where TEnum : Enum
+
+    private void RenderGuidField(RenderTreeBuilder builder, PropertyInfo prop)
     {
-        var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
-        if (member == null) return value.ToString();
+        var value = (Guid?)prop.GetValue(Model) ?? Guid.Empty;
 
-        var displayAttr = member.GetCustomAttribute<DisplayAttribute>();
-        if (displayAttr != null)
-            return displayAttr.Name ?? value.ToString();
-
-        var descAttr = member.GetCustomAttribute<DescriptionAttribute>();
-        return descAttr != null ? descAttr.Description : value.ToString();
+        builder.OpenComponent(0, typeof(MudTextField<Guid>));
+        builder.AddAttribute(1, "Label", prop.Name);
+        builder.AddAttribute(2, "Immediate", true);
+        builder.AddAttribute(3, "Value", value);
+        builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<Guid>(this, val =>
+        {
+            prop.SetValue(Model, val);
+            StateHasChanged();
+        }));
+        builder.AddAttribute(5, "Validation", GetValidatorForProperty<Guid>(prop.Name));
+        builder.CloseComponent();
     }
 
+    private void RenderGuidSelect(RenderTreeBuilder builder, PropertyInfo prop, List<(Guid Id, string Name)> options)
+    {
+        var value = (Guid?)prop.GetValue(Model) ?? Guid.Empty;
+
+        builder.OpenComponent(0, typeof(MudSelect<Guid>));
+        builder.AddAttribute(1, "Label", prop.Name);
+        builder.AddAttribute(2, "Value", value);
+        builder.AddAttribute(3, "ValueChanged", EventCallback.Factory.Create<Guid>(this, val =>
+        {
+            prop.SetValue(Model, val);
+            StateHasChanged();
+        }));
+        builder.AddAttribute(4, "Validation", GetValidatorForProperty<Guid>(prop.Name));
+        builder.AddAttribute(5, "Dense", true);
+        builder.AddAttribute(6, "ChildContent", (RenderFragment)(childBuilder =>
+        {
+            foreach (var (id, name) in options)
+            {
+                childBuilder.OpenComponent(0, typeof(MudSelectItem<Guid>));
+                childBuilder.AddAttribute(1, "Value", id);
+                childBuilder.AddAttribute(2, "ChildContent", (RenderFragment)(contentBuilder =>
+                {
+                    contentBuilder.AddContent(3, name);
+                }));
+                childBuilder.CloseComponent();
+            }
+        }));
+        builder.CloseComponent();
+    }
+
+    private void RenderDateTimeField(RenderTreeBuilder builder, PropertyInfo prop)
+    {
+        var value = (DateTime?)prop.GetValue(Model) ?? DateTime.Now;
+
+        builder.OpenComponent(0, typeof(MudDatePicker));
+        builder.AddAttribute(1, "Label", prop.Name);
+        builder.AddAttribute(2, "Value", value);
+        builder.AddAttribute(3, "ValueChanged", EventCallback.Factory.Create<DateTime?>(this, val =>
+        {
+            prop.SetValue(Model, val ?? DateTime.Now);
+            StateHasChanged();
+        }));
+        builder.AddAttribute(4, "Validation", GetValidatorForProperty<DateTime>(prop.Name));
+        builder.CloseComponent();
+    }
+
+    private void RenderBoolField(RenderTreeBuilder builder, PropertyInfo prop)
+    {
+        var value = (bool?)prop.GetValue(Model) ?? false;
+
+        builder.OpenComponent(0, typeof(MudCheckBox<bool>));
+        builder.AddAttribute(1, "Label", prop.Name);
+        builder.AddAttribute(2, "Checked", value);
+        builder.AddAttribute(3, "CheckedChanged", EventCallback.Factory.Create<bool>(this, val =>
+        {
+            prop.SetValue(Model, val);
+            StateHasChanged();
+        }));
+        builder.AddAttribute(4, "Validation", GetValidatorForProperty<bool>(prop.Name));
+        builder.CloseComponent();
+    }
 
     private void RenderNumericField<T>(RenderTreeBuilder builder, PropertyInfo prop)
     {
@@ -105,7 +195,7 @@
         builder.AddAttribute(5, "Validation", GetValidatorForProperty<T>(prop.Name));
         builder.CloseComponent();
     }
-    
+
     private void RenderEnumField<TEnum>(RenderTreeBuilder builder, PropertyInfo prop) where TEnum : Enum
     {
         var currentValue = (TEnum?)prop.GetValue(Model);
@@ -139,19 +229,31 @@
         builder.CloseComponent();
     }
 
+    private static string GetEnumDisplayName<TEnum>(TEnum value) where TEnum : Enum
+    {
+        var member = typeof(TEnum).GetMember(value.ToString()).FirstOrDefault();
+        if (member == null) return value.ToString();
+
+        var displayAttr = member.GetCustomAttribute<DisplayAttribute>();
+        if (displayAttr != null)
+            return displayAttr.Name ?? value.ToString();
+
+        var descAttr = member.GetCustomAttribute<DescriptionAttribute>();
+        return descAttr != null ? descAttr.Description : value.ToString();
+    }
+
     private Func<TFieldType, Task<IEnumerable<string>>> GetValidatorForProperty<TFieldType>(string propertyName)
     {
         return async (_) =>
         {
-            var validator = new TValidator();
             var context = new ValidationContext<TModel>(Model,
                 new PropertyChain(),
                 new MemberNameValidatorSelector([propertyName]));
-            
-            var result = await validator.ValidateAsync(context);
+
+            var result = await _validator.ValidateAsync(context);
 
             return result.IsValid
-                ? Array.Empty<string>()
+                ? []
                 : result.Errors
                     .Where(e => e.PropertyName == propertyName)
                     .Select(e => e.ErrorMessage);
@@ -172,5 +274,4 @@
     {
         MudDialog.Cancel();
     }
-
 }
