@@ -7,12 +7,26 @@ namespace Zm.MudGridKit.DataGrid;
 public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IDataGridService<T>
     where T : class
 {
-    public IDialogService? DialogService { get; set; }
-
     protected string Search { get; set; } = string.Empty;
 
     protected virtual IValidator<TCreateDto>? CreateValidator => null;
     protected virtual IValidator<TUpdateDto>? UpdateValidator => null;
+
+    protected abstract Type AddDialog { get; }
+    protected abstract Type EditDialog { get; }
+
+    protected virtual DialogOptions DefaultDialogOptions => new()
+    {
+        CloseOnEscapeKey = true,
+        FullWidth = true,
+        MaxWidth = MaxWidth.Medium,
+        CloseButton = true
+    };
+
+    protected virtual DialogOptions AddDialogOptions => DefaultDialogOptions;
+
+    protected virtual DialogOptions EditDialogOptions => DefaultDialogOptions;
+    public IDialogService? DialogService { get; set; }
 
     public abstract Task<GridData<T>> LoadData(GridState<T> state);
 
@@ -71,20 +85,4 @@ public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IData
     protected abstract Task OnDeleteInternal(List<T> items);
 
     protected abstract Task<TUpdateDto> MapToUpdateModelAsync(T entity);
-
-    protected abstract Type AddDialog { get; }
-    protected abstract Type EditDialog { get; }
-    
-    protected virtual DialogOptions DefaultDialogOptions => new()
-    {
-        CloseOnEscapeKey = true,
-        FullWidth = true,
-        MaxWidth = MaxWidth.Medium,
-        CloseButton = true
-    };
-
-    protected virtual DialogOptions AddDialogOptions => DefaultDialogOptions;
-
-    protected virtual DialogOptions EditDialogOptions => DefaultDialogOptions;
-
 }

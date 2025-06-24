@@ -5,13 +5,19 @@ public abstract class ApiDataGridService<T, TCreateDto, TUpdateDto>
     where T : class
 {
     protected override Task OnCreate(object createDto)
-        => CreateEntityFromDto(createDto);
+    {
+        return CreateEntityFromDto(createDto);
+    }
 
     protected override Task OnUpdate(T existing, object updateDto)
-        => ApplyUpdateToEntity(existing, updateDto);
+    {
+        return ApplyUpdateToEntity(existing, updateDto);
+    }
 
     protected override Task OnDeleteInternal(List<T> items)
-        => DeleteEntities(items);
+    {
+        return DeleteEntities(items);
+    }
 
     protected abstract Task CreateEntityFromDto(object createDto);
 

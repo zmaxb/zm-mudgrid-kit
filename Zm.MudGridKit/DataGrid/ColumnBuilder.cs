@@ -10,7 +10,10 @@ public class ColumnBuilder<TItem>
 {
     private readonly List<ColumnConfig<TItem>> _columns = new();
 
-    public static ColumnBuilder<TItem> For() => new();
+    public static ColumnBuilder<TItem> For()
+    {
+        return new ColumnBuilder<TItem>();
+    }
 
     public ColumnBuilder<TItem> Add<TProp>(
         Expression<Func<TItem, TProp>> property,
@@ -44,7 +47,6 @@ public class ColumnBuilder<TItem>
         if (config.Property == null)
             throw new InvalidOperationException("Column must have a Property defined.");
 
-        config.PropertyType ??= GetPropertyType(config.Property);
         _columns.Add(config);
 
         return this;
@@ -65,13 +67,10 @@ public class ColumnBuilder<TItem>
 
         return this;
     }
-    
+
     public ColumnBuilder<TItem> AddColumnsIf(bool condition, Action<ColumnBuilder<TItem>> columns)
     {
-        if (condition)
-        {
-            columns(this);
-        }
+        if (condition) columns(this);
 
         return this;
     }

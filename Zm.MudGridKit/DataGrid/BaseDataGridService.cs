@@ -9,7 +9,9 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto>
     protected List<T> Items { get; } = [];
 
     public override Task<GridData<T>> LoadData(GridState<T> state)
-        => Task.FromResult(new GridData<T> { Items = Items, TotalItems = Items.Count });
+    {
+        return Task.FromResult(new GridData<T> { Items = Items, TotalItems = Items.Count });
+    }
 
     protected override Task OnCreate(object createDto)
     {
@@ -19,7 +21,9 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto>
     }
 
     protected override Task OnUpdate(T existing, object updateDto)
-        => ApplyUpdateToEntity(existing, updateDto);
+    {
+        return ApplyUpdateToEntity(existing, updateDto);
+    }
 
     protected override Task OnDeleteInternal(List<T> items)
     {
@@ -33,5 +37,8 @@ public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto>
 
     protected abstract Task ApplyUpdateToEntity(T existing, object updateDto);
 
-    protected virtual Task OnDeleteEntities(List<T> items) => Task.CompletedTask;
+    protected virtual Task OnDeleteEntities(List<T> items)
+    {
+        return Task.CompletedTask;
+    }
 }

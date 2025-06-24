@@ -57,13 +57,13 @@
 </MudDataGrid>
 
 @code {
-    
+
     [Parameter] public required DataGridOptions Options { get; set; }
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? TopRightContent { get; set; }
 
     private MudDataGrid<T> _dataGrid = null!;
-    
+
     private async Task<GridData<T>> WrappedServerLoadData(GridState<T> state)
     {
         _dataGrid.SelectedItems.Clear();
@@ -108,7 +108,7 @@
 
         await _dataGrid.ReloadServerData();
     }
-    
+
     public async Task ReloadAsync()
     {
         await _dataGrid.ReloadServerData();

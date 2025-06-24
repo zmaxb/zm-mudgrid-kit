@@ -1,4 +1,5 @@
 // ReSharper disable AutoPropertyCanBeMadeGetOnly.Global
+
 namespace Zm.MudGridKit.DataGrid;
 
 public class DataGridOptions
