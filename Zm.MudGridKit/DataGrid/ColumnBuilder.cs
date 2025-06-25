@@ -52,9 +52,8 @@ public class ColumnBuilder<TItem>
         return this;
     }
 
-    public ColumnBuilder<TItem> AddColumn<TProp>(
-        Expression<Func<TItem, TProp>> property,
-        Action<ColumnConfig<TItem>> configure)
+    public ColumnBuilder<TItem> AddColumn<TProp>(Expression<Func<TItem, TProp>> property,
+        Action<ColumnConfig<TItem>>? configure)
     {
         var config = new ColumnConfig<TItem>
         {
@@ -62,11 +61,17 @@ public class ColumnBuilder<TItem>
             PropertyType = typeof(TProp)
         };
 
-        configure(config);
+        configure?.Invoke(config);
         _columns.Add(config);
 
         return this;
     }
+
+    public ColumnBuilder<TItem> AddColumn<TProp>(Expression<Func<TItem, TProp>> property)
+    {
+        return AddColumn(property, null);
+    }
+
 
     public ColumnBuilder<TItem> AddColumnsIf(bool condition, Action<ColumnBuilder<TItem>> columns)
     {
