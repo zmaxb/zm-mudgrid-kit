@@ -8,7 +8,7 @@
 
 @namespace Zm.MudGridKit.Core.Components
 
-<MudDataGrid T="T" @ref="_dataGrid"
+<MudDataGrid T="T" @ref="DataGrid"
              MultiSelection="Options.MultiSelection"
              SortMode="SortMode.Multiple"
              Hideable="true"
@@ -25,10 +25,10 @@
             <MudSpacer/>
         }
         <MudButton OnClick="OnAdd" Color="Color.Primary">Add</MudButton>
-        <MudButton OnClick="@(_ => OnEdit(_dataGrid.SelectedItems.FirstOrDefault()))" Color="Color.Secondary"
-                   Disabled="@(_dataGrid.Selection.Count != 1)">Edit
+        <MudButton OnClick="@(_ => OnEdit(DataGrid.SelectedItems.FirstOrDefault()))" Color="Color.Secondary"
+                   Disabled="@(DataGrid.Selection.Count != 1)">Edit
         </MudButton>
-        <MudButton OnClick="OnDelete" Color="Color.Error" Disabled="@(_dataGrid.Selection.Count == 0)">Delete
+        <MudButton OnClick="OnDelete" Color="Color.Error" Disabled="@(DataGrid.Selection.Count == 0)">Delete
         </MudButton>
         <MudSpacer/>
         @if (Options.SearchEnabled)
@@ -62,14 +62,17 @@
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? TopRightContent { get; set; }
 
-    private MudDataGrid<T> _dataGrid = null!;
+    /// <summary>
+    ///     Direct access to the internal MudDataGrid component.
+    ///     Use with care if built-in methods are insufficient.
+    /// </summary>
+    public MudDataGrid<T> DataGrid = null!;
 
     private async Task<GridData<T>> WrappedServerLoadData(GridState<T> state)
     {
-        _dataGrid.SelectedItems.Clear();
+        DataGrid.SelectedItems.Clear();
         return await DataGridService.LoadData(state);
     }
-
 
     protected override void OnInitialized()
     {
@@ -79,24 +82,23 @@
     private async Task OnAdd()
     {
         await DataGridService.OnAdd();
-        await _dataGrid.ReloadServerData();
+        await DataGrid.ReloadServerData();
     }
 
-    private async Task OnEdit(T? entiety)
+    private async Task OnEdit(T? entity)
     {
-        if (entiety == null)
+        if (entity == null)
             return;
 
-        await DataGridService.OnEdit(entiety);
-        await _dataGrid.ReloadServerData();
+        await DataGridService.OnEdit(entity);
+        await DataGrid.ReloadServerData();
     }
-
 
     private async Task OnDelete()
     {
-        var selectedAssets = _dataGrid.SelectedItems.ToList();
-        await DataGridService.OnDelete(selectedAssets);
-        await _dataGrid.ReloadServerData();
+        var selectedItem = DataGrid.SelectedItems.ToList();
+        await DataGridService.OnDelete(selectedItem);
+        await DataGrid.ReloadServerData();
     }
 
     private async Task OnSearch(string? searchText)
@@ -106,12 +108,12 @@
             await DataGridService.OnSearch(searchText);
         }
 
-        await _dataGrid.ReloadServerData();
+        await DataGrid.ReloadServerData();
     }
 
     public async Task ReloadAsync()
     {
-        await _dataGrid.ReloadServerData();
+        await DataGrid.ReloadServerData();
     }
 
 }

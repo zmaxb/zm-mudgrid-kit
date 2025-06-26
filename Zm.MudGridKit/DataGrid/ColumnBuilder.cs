@@ -147,6 +147,9 @@ public class ColumnBuilder<TItem>
         if (column.Template is not null)
             builder.AddAttribute(seq++, "CellTemplate", column.Template);
 
+        if (column.InitialDirection is not null)
+            builder.AddAttribute(seq++, "InitialDirection", column.InitialDirection);
+
         builder.CloseComponent();
     }
 
@@ -168,6 +171,7 @@ public class ColumnBuilder<TItem>
         public Type PropertyType { get; set; } = null!;
         public RenderFragment<CellContext<TItem>>? Template { get; set; }
         public RenderFragment<HeaderContext<TItem>>? HeaderTemplate { get; set; }
+        public SortDirection? InitialDirection { get; set; }
 
         public string PropertyName => (Property.Body as MemberExpression)?.Member.Name ?? string.Empty;
     }
