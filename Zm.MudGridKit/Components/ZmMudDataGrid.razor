@@ -56,6 +56,7 @@
 
 </MudDataGrid>
 
+@* ReSharper disable once MemberCanBePrivate.Global *@
 @code {
 
     [Parameter] public required DataGridOptions Options { get; set; }
@@ -64,7 +65,7 @@
 
     /// <summary>
     ///     Direct access to the internal MudDataGrid component.
-    ///     Use with care if built-in methods are insufficient.
+    ///     Use with care if built-in methods are not enough.
     /// </summary>
     public MudDataGrid<T> DataGrid = null!;
 
