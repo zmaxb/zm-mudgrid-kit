@@ -1,12 +1,15 @@
+@using System.Globalization
+@using Microsoft.Extensions.Localization
 @using MudBlazor
 @using Zm.MudGridKit.DataGrid
 @using Zm.MudGridKit.Interfaces
+@using Zm.MudGridKit.Resources
 @typeparam T where T : class
-
+@inject IStringLocalizer<ZmMudDataGridLocalization> L
 @inject IDataGridService<T> DataGridService
 @inject IDialogService DialogService
 
-@namespace Zm.MudGridKit.Core.Components
+@namespace Zm.MudGridKit.Components
 
 <MudDataGrid T="T" @ref="DataGrid"
              MultiSelection="Options.MultiSelection"
@@ -24,16 +27,17 @@
             <MudText Typo="Typo.h6">@Options.Title</MudText>
             <MudSpacer/>
         }
-        <MudButton OnClick="OnAdd" Color="Color.Primary">Add</MudButton>
+        <MudButton OnClick="OnAdd" Color="Color.Primary">@L["Button.Add"]</MudButton>
         <MudButton OnClick="@(_ => OnEdit(DataGrid.SelectedItems.FirstOrDefault()))" Color="Color.Secondary"
-                   Disabled="@(DataGrid.Selection.Count != 1)">Edit
+                   Disabled="@(DataGrid.Selection.Count != 1)">@L["Button.Edit"]
         </MudButton>
-        <MudButton OnClick="OnDelete" Color="Color.Error" Disabled="@(DataGrid.Selection.Count == 0)">Delete
+        <MudButton OnClick="OnDelete" Color="Color.Error" Disabled="@(DataGrid.Selection.Count == 0)">
+            @L["Button.Delete"]
         </MudButton>
         <MudSpacer/>
         @if (Options.SearchEnabled)
         {
-            <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder="Search"
+            <MudTextField T="string" ValueChanged="@(s => OnSearch(s))" Placeholder=@L["Placeholder.Search"]
                           Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.Search"
                           IconSize="Size.Medium" Class="mt-0"></MudTextField>
         }

@@ -9,15 +9,15 @@
 
 
     <ItemGroup>
-        <PackageReference Include="Bogus" Version="35.6.2" />
-        <PackageReference Include="FluentValidation" Version="11.11.0" />
-        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0" />
-        <PackageReference Include="MudBlazor" Version="8.5.1" />
-        <PackageReference Include="MudBlazor.Extensions" Version="8.5.1" />
+        <PackageReference Include="Bogus" Version="35.6.2"/>
+        <PackageReference Include="FluentValidation" Version="11.11.0"/>
+        <PackageReference Include="FluentValidation.AspNetCore" Version="11.3.0"/>
+        <PackageReference Include="MudBlazor" Version="8.5.1"/>
+        <PackageReference Include="MudBlazor.Extensions" Version="8.5.1"/>
     </ItemGroup>
 
 
     <ItemGroup>
-        <ProjectReference Include="..\Zm.MudGridKit\Zm.MudGridKit.csproj" />
+        <ProjectReference Include="..\Zm.MudGridKit\Zm.MudGridKit.csproj"/>
     </ItemGroup>
 </Project>

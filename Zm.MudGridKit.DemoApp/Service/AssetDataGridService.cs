@@ -19,7 +19,7 @@ public class AssetDataGridService
             .RuleFor(x => x.Name, f => f.Company.CompanyName())
             .RuleFor(x => x.Symbol, f => f.Random.AlphaNumeric(4).ToUpper())
             .RuleFor(x => x.Precision, f => f.Random.Int(0, 8))
-            .RuleFor(x => x.CreatedAt, f => f.Date.PastOffset(1).DateTime);
+            .RuleFor(x => x.CreatedAt, f => f.Date.PastOffset().DateTime);
 
         Items.AddRange(faker.Generate(100));
     }
@@ -29,7 +29,13 @@ public class AssetDataGridService
 
     protected override Type EditDialog =>
         AutoFormWrapper.Create<AssetUpdateDto, AssetUpdateDtoValidator>();
-    
+
+    protected override IValidator<AssetCreateDto> CreateValidator =>
+        new AssetCreateDtoValidator();
+
+    protected override IValidator<AssetUpdateDto> UpdateValidator =>
+        new AssetUpdateDtoValidator();
+
     protected override async Task<AssetUpdateDto> MapToUpdateModelAsync(AssetReadDto entity)
     {
         return await Task.FromResult(new AssetUpdateDto
@@ -39,12 +45,6 @@ public class AssetDataGridService
             Precision = entity.Precision
         });
     }
-
-    protected override IValidator<AssetCreateDto> CreateValidator =>
-        new AssetCreateDtoValidator();
-
-    protected override IValidator<AssetUpdateDto> UpdateValidator =>
-        new AssetUpdateDtoValidator();
 
     protected override AssetReadDto CreateEntityFromDto(object createDto)
     {
@@ -82,22 +82,18 @@ public class AssetDataGridService
         IEnumerable<AssetReadDto> query = Items;
 
         if (!string.IsNullOrWhiteSpace(Search))
-        {
             query = query.Where(x =>
                 x.Name.Contains(Search, StringComparison.OrdinalIgnoreCase) ||
                 x.Symbol.Contains(Search, StringComparison.OrdinalIgnoreCase));
-        }
 
         var sort = state.SortDefinitions.FirstOrDefault();
         if (sort is not null)
         {
             var prop = typeof(AssetReadDto).GetProperty(sort.SortBy ?? "");
             if (prop is not null)
-            {
                 query = sort.Descending
                     ? query.OrderByDescending(x => prop.GetValue(x))
                     : query.OrderBy(x => prop.GetValue(x));
-            }
         }
 
         var paged = query
@@ -111,5 +107,4 @@ public class AssetDataGridService
             TotalItems = query.Count()
         });
     }
-
 }

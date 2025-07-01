@@ -47,7 +47,7 @@
 @code {
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
 
-    private AssetCreateDto _newAsset = new();
+    private readonly AssetCreateDto _newAsset = new();
     private MudForm _form = null!;
     private static readonly AssetCreateDtoValidator AssetValidator = new();
 
@@ -61,10 +61,13 @@
         }
         else
         {
-            Snackbar.Add("Please correct the validation errors", severity: Severity.Warning);
+            Snackbar.Add("Please correct the validation errors", Severity.Warning);
         }
     }
 
-    private void CloseDialog() => MudDialog.Cancel();
+    private void CloseDialog()
+    {
+        MudDialog.Cancel();
+    }
 
 }

@@ -1,7 +1,7 @@
 @page "/"
 @using Zm.MudGridKit.DataGrid
 @using Zm.MudGridKit.DemoApp.Models
-@using Zm.MudGridKit.Core.Components
+@using Zm.MudGridKit.Components
 
 <MudText Typo="Typo.h4" GutterBottom="true">Assets</MudText>
 <MudText Typo="Typo.body1" Class="mb-8">All financial instruments</MudText>
@@ -21,13 +21,13 @@
             c.HeaderTemplate = ctx => @<MudText Color="Color.Primary">😝 Symbol</MudText>;
             c.Template = ctx => @<MudText Color="Color.Info">@ctx.Item.Symbol</MudText>;
         })
-        .AddColumn<int>(x => x.Precision, c =>
+        .AddColumn(x => x.Precision, c =>
         {
             c.Title = "Precision";
             c.Align = Align.Right;
             c.Format = "0.###";
         })
-        .AddColumn<DateTime>(x => x.CreatedAt, c =>
+        .AddColumn(x => x.CreatedAt, c =>
         {
             c.Title = "Created At";
             c.Align = Align.Right;

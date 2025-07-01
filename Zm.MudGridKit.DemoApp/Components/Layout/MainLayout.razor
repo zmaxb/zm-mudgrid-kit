@@ -7,7 +7,7 @@
 <MudLayout>
     <MudAppBar Color="Color.Primary" Fixed="false">
         <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start"
-                       OnClick="@((e) => DrawerToggle())"/>
+                       OnClick="@(e => DrawerToggle())"/>
         <MudText Typo="Typo.h5" Class="ml-3">Zm.MudGridKit</MudText>
         <MudSpacer/>
         <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Href="https://github.com/zmaxb/Zm-MudGridKit"
@@ -29,21 +29,24 @@
 
 @code {
     private bool _drawerOpen;
-    private bool _isDarkMode = true;
+    private readonly bool _isDarkMode = true;
     private MudTheme? _theme;
 
     protected override void OnInitialized()
     {
         base.OnInitialized();
 
-        _theme = new()
+        _theme = new MudTheme
         {
             PaletteDark = _darkPalette,
             LayoutProperties = new LayoutProperties()
         };
     }
 
-    private void DrawerToggle() => _drawerOpen = !_drawerOpen;
+    private void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
 
     private readonly PaletteDark _darkPalette = new()
     {
@@ -71,7 +74,7 @@
         LinesDefault = "#33323e",
         TableLines = "#33323e",
         Divider = "#292838",
-        OverlayLight = "#1e1e2d80",
+        OverlayLight = "#1e1e2d80"
     };
 
 }
