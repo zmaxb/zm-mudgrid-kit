@@ -10,7 +10,7 @@
 
 <MudDataGrid T="T" @ref="DataGrid"
              MultiSelection="Options.MultiSelection"
-             SortMode="SortMode.Multiple"
+             SortMode="SortMode.Single"
              Hideable="true"
              RowsPerPage="Options.DefaultPageSize"
              ServerData="WrappedServerLoadData"
@@ -57,9 +57,10 @@
 </MudDataGrid>
 
 @* ReSharper disable once MemberCanBePrivate.Global *@
+
 @code {
 
-    [Parameter] public required DataGridOptions Options { get; set; }
+    [Parameter] public DataGridOptions Options { get; set; } = new();
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? TopRightContent { get; set; }
 

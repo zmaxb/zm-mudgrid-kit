@@ -3,6 +3,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
+
 // ReSharper disable PropertyCanBeMadeInitOnly.Global
 
 namespace Zm.MudGridKit.DataGrid;
@@ -11,7 +12,10 @@ public class ColumnBuilder<TItem>
 {
     private readonly List<ColumnConfig<TItem>> _columns = new();
 
-    public static ColumnBuilder<TItem> For() => new ColumnBuilder<TItem>();
+    public static ColumnBuilder<TItem> For()
+    {
+        return new ColumnBuilder<TItem>();
+    }
 
     public ColumnBuilder<TItem> Add<TProp>(
         Expression<Func<TItem, TProp>> property,

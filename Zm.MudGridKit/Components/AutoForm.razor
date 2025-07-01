@@ -1,6 +1,4 @@
 @typeparam TModel
-@typeparam TValidator where TValidator : FluentValidation.IValidator<TModel>, new()
-
 @using System.ComponentModel
 @using System.ComponentModel.DataAnnotations
 @using System.Reflection
@@ -8,10 +6,11 @@
 @using FluentValidation.Internal
 @using Microsoft.AspNetCore.Components.Rendering
 @using MudBlazor
+@typeparam TValidator where TValidator : FluentValidation.IValidator<TModel>, new()
 
 <div class="pa-4">
     <MudForm @ref="_form">
-        <MudGrid GutterSize="2">
+        <MudGrid gutterSize="2">
             @foreach (var (prop, index) in Properties.Select((p, i) => (p, i)))
             {
                 <MudItem xs="12" md="6">
@@ -86,7 +85,7 @@
                 default:
                     builder.OpenComponent<MudTextField<string>>(seq++);
                     builder.AddAttribute(seq++, "Label", label);
-                    builder.AddAttribute(seq++, "Immediate", true);
+                    builder.AddAttribute(seq++, "immediate", true);
                     builder.AddAttribute(seq++, "Value", value?.ToString() ?? string.Empty);
                     builder.AddAttribute(seq++, "ValueChanged", EventCallback.Factory.Create<string>(this, val =>
                     {
@@ -106,7 +105,7 @@
 
         builder.OpenComponent(0, typeof(MudTextField<Guid>));
         builder.AddAttribute(1, "Label", label);
-        builder.AddAttribute(2, "Immediate", true);
+        builder.AddAttribute(2, "immediate", true);
         builder.AddAttribute(3, "Value", value);
         builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<Guid>(this, val =>
         {
@@ -130,7 +129,7 @@
             StateHasChanged();
         }));
         builder.AddAttribute(4, "Validation", GetValidatorForProperty<Guid>(prop.Name));
-        builder.AddAttribute(5, "Dense", true);
+        builder.AddAttribute(5, "dense", true);
         builder.AddAttribute(6, "ChildContent", (RenderFragment)(childBuilder =>
         {
             foreach (var (id, name) in options)
@@ -168,8 +167,8 @@
         }));
         builder.AddAttribute(6, "PickerVariant", PickerVariant.Inline);
         builder.AddAttribute(7, "DateFormat", "yyyy-MM-dd");
-        builder.AddAttribute(8, "Immediate", true);
-        builder.AddAttribute(9, "Dense", true);
+        builder.AddAttribute(8, "immediate", true);
+        builder.AddAttribute(9, "dense", true);
         builder.CloseComponent();
         builder.CloseElement();
 
@@ -187,11 +186,11 @@
                 ApplyCombined();
             }
         }));
-        builder.AddAttribute(16, "EnableSeconds", true);
+        builder.AddAttribute(16, "enableSeconds", true);
         builder.AddAttribute(17, "TimeFormat", "HH:mm:ss");
         builder.AddAttribute(18, "AmPm", false);
         builder.AddAttribute(19, "PickerVariant", PickerVariant.Inline);
-        builder.AddAttribute(20, "Dense", true);
+        builder.AddAttribute(20, "dense", true);
         builder.CloseComponent();
         builder.CloseElement();
         return;
@@ -224,7 +223,7 @@
     {
         builder.OpenComponent(0, typeof(MudNumericField<T>));
         builder.AddAttribute(1, "Label", label);
-        builder.AddAttribute(2, "Immediate", true);
+        builder.AddAttribute(2, "immediate", true);
         builder.AddAttribute(3, "Value", (T?)prop.GetValue(Model));
         builder.AddAttribute(4, "ValueChanged", EventCallback.Factory.Create<T>(this, val =>
         {
@@ -249,7 +248,7 @@
             StateHasChanged();
         }));
         builder.AddAttribute(4, "Validation", GetValidatorForProperty<TEnum>(prop.Name));
-        builder.AddAttribute(5, "Dense", true);
+        builder.AddAttribute(5, "dense", true);
         builder.AddAttribute(6, "ChildContent", (RenderFragment)(childBuilder =>
         {
             foreach (var item in items)
