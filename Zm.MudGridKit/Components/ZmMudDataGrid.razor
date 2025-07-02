@@ -1,11 +1,10 @@
-@using System.Globalization
 @using Microsoft.Extensions.Localization
 @using MudBlazor
 @using Zm.MudGridKit.DataGrid
 @using Zm.MudGridKit.Interfaces
 @using Zm.MudGridKit.Resources
 @typeparam T where T : class
-@inject IStringLocalizer<ZmMudDataGridLocalization> L
+@inject IStringLocalizerFactory LocalizerFactory
 @inject IDataGridService<T> DataGridService
 @inject IDialogService DialogService
 
@@ -67,6 +66,8 @@
     [Parameter] public DataGridOptions Options { get; set; } = new();
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? TopRightContent { get; set; }
+    
+    private IStringLocalizer L = null!;
 
     /// <summary>
     ///     Direct access to the internal MudDataGrid component.
@@ -82,6 +83,11 @@
 
     protected override void OnInitialized()
     {
+        L = LocalizerFactory.Create(
+            "ZmMudDataGridLocalization",
+            typeof(ZmMudDataGridLocalization).Assembly.GetName().Name!
+        );
+        
         DataGridService.DialogService = DialogService;
     }
 

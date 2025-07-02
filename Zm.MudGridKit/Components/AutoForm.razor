@@ -9,7 +9,7 @@
 @using MudBlazor
 @using Zm.MudGridKit.Resources
 @typeparam TValidator where TValidator : IValidator<TModel>, new()
-@inject IStringLocalizer<AutoFormLocalization> L
+@inject IStringLocalizerFactory LocalizerFactory
 
 <div class="pa-4">
     <MudForm @ref="_form">
@@ -34,6 +34,8 @@
     [Parameter] public TModel Model { get; set; } = default!;
     [Parameter] public EventCallback<TModel> OnSave { get; set; }
     [Parameter] public Dictionary<string, List<(Guid Id, string Name)>>? GuidSelectors { get; set; }
+    
+    private IStringLocalizer L = null!;
 
     [CascadingParameter] private IMudDialogInstance MudDialog { get; set; } = null!;
     private MudForm _form = null!;
@@ -102,6 +104,14 @@
         };
     }
 
+    protected override void OnInitialized()
+    {
+        L = LocalizerFactory.Create(
+            "AutoFormLocalization",
+            typeof(AutoFormLocalization).Assembly.GetName().Name!
+        );
+    }
+    
     private void RenderGuidField(RenderTreeBuilder builder, PropertyInfo prop, string label)
     {
         var value = (Guid?)prop.GetValue(Model) ?? Guid.Empty;
