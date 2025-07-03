@@ -4,7 +4,7 @@ using Zm.MudGridKit.Interfaces;
 
 namespace Zm.MudGridKit.DataGrid;
 
-public abstract class AbstractDataGridService<T, TCreateDto, TUpdateDto> : IDataGridService<T>
+public abstract class AbstractCrudDataGridService<T, TCreateDto, TUpdateDto> : ICrudDataGridService<T>
     where T : class
 {
     protected string Search { get; set; } = string.Empty;

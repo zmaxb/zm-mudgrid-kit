@@ -1,7 +1,7 @@
 namespace Zm.MudGridKit.DataGrid;
 
-public abstract class ApiDataGridService<T, TCreateDto, TUpdateDto>
-    : AbstractDataGridService<T, TCreateDto, TUpdateDto>
+public abstract class ApiCrudDataGridService<T, TCreateDto, TUpdateDto>
+    : AbstractCrudDataGridService<T, TCreateDto, TUpdateDto>
     where T : class
 {
     protected override Task OnCreate(object createDto)

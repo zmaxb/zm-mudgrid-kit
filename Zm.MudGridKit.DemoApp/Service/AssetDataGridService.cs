@@ -10,7 +10,7 @@ using Zm.MudGridKit.Forms;
 namespace Zm.MudGridKit.DemoApp.Service;
 
 public class AssetDataGridService
-    : BaseDataGridService<AssetReadDto, AssetCreateDto, AssetUpdateDto>
+    : BaseCrudDataGridService<AssetReadDto, AssetCreateDto, AssetUpdateDto>
 {
     public AssetDataGridService()
     {

@@ -2,8 +2,8 @@ using MudBlazor;
 
 namespace Zm.MudGridKit.DataGrid;
 
-public abstract class BaseDataGridService<T, TCreateDto, TUpdateDto>
-    : AbstractDataGridService<T, TCreateDto, TUpdateDto>
+public abstract class BaseCrudDataGridService<T, TCreateDto, TUpdateDto>
+    : AbstractCrudDataGridService<T, TCreateDto, TUpdateDto>
     where T : class
 {
     protected List<T> Items { get; } = [];

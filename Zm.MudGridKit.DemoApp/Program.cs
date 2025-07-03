@@ -1,4 +1,3 @@
-using System.Globalization;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using MudBlazor.Services;
@@ -17,7 +16,7 @@ public class Program
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddScoped<AssetDataGridService>();
 
-        builder.Services.AddScoped<IDataGridService<AssetReadDto>, AssetDataGridService>();
+        builder.Services.AddScoped<ICrudDataGridService<AssetReadDto>, AssetDataGridService>();
 
         builder.Services.AddValidatorsFromAssemblyContaining<AssetCreateDtoValidator>();
         builder.Services.AddFluentValidationAutoValidation();
@@ -29,9 +28,9 @@ public class Program
         // Add services to the container.
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
-        
+
         builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
-        
+
         var app = builder.Build();
         // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())

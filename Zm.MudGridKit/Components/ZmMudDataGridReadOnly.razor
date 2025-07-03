@@ -5,8 +5,7 @@
 @using Zm.MudGridKit.Resources
 @inherits ZmMudDataGridBase<T>
 @inject IStringLocalizerFactory LocalizerFactory
-@inject ICrudDataGridService<T> CrudDataGridService
-@inject IDialogService DialogService
+@inject IReadOnlyDataGridService<T> CrudDataGridService
 
 <MudDataGrid T="T" @ref="DataGrid"
              MultiSelection="Options.MultiSelection"
@@ -24,17 +23,6 @@
             <MudText Typo="Typo.h6">@Options.Title</MudText>
             <MudSpacer/>
         }
-        <MudButton OnClick="OnAdd" Color="Color.Primary">@L["Button.Add"]</MudButton>
-        <MudButton OnClick="@(_ => OnEdit(DataGrid.SelectedItems.FirstOrDefault()))"
-                   Color="Color.Secondary"
-                   Disabled="@(DataGrid.Selection.Count != 1)">
-            @L["Button.Edit"]
-        </MudButton>
-        <MudButton OnClick="OnDelete"
-                   Color="Color.Error"
-                   Disabled="@(DataGrid.Selection.Count == 0)">
-            @L["Button.Delete"]
-        </MudButton>
         <MudSpacer/>
         @if (Options.SearchEnabled)
         {
@@ -73,8 +61,6 @@
             "ZmMudDataGridLocalization",
             typeof(ZmMudDataGridLocalization).Assembly.GetName().Name!
         );
-
-        CrudDataGridService.DialogService = DialogService;
     }
 
     protected override Task<GridData<T>> LoadData(GridState<T> state)
@@ -85,28 +71,6 @@
     protected override Task OnSearch(string? searchText)
     {
         return searchText != null ? CrudDataGridService.OnSearch(searchText) : Task.CompletedTask;
-    }
-
-    private async Task OnAdd()
-    {
-        await CrudDataGridService.OnAdd();
-        await DataGrid.ReloadServerData();
-    }
-
-    private async Task OnEdit(T? entity)
-    {
-        if (entity == null)
-            return;
-
-        await CrudDataGridService.OnEdit(entity);
-        await DataGrid.ReloadServerData();
-    }
-
-    private async Task OnDelete()
-    {
-        var selectedItems = DataGrid.SelectedItems.ToList();
-        await CrudDataGridService.OnDelete(selectedItems);
-        await DataGrid.ReloadServerData();
     }
 
 }
