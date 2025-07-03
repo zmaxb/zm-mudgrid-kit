@@ -30,7 +30,7 @@ public class Program
         builder.Services.AddRazorComponents()
             .AddInteractiveServerComponents();
         
-        builder.Services.AddLocalization();
+        builder.Services.AddLocalization(options => options.ResourcesPath = "Resources");
         
         var app = builder.Build();
         // Configure the HTTP request pipeline.
