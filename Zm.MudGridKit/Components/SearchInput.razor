@@ -1,0 +1,42 @@
+@using MudBlazor
+@typeparam T
+
+<MudTextField T="string"
+              Value="_search"
+              ValueChanged="OnInternalSearchChanged"
+              Immediate="true"
+              Placeholder="@Placeholder"
+              Adornment="Adornment.Start"
+              AdornmentIcon="@Icons.Material.Filled.Search"
+              IconSize="Size.Medium"
+              Class="@Class" />
+
+@code {
+    private string? _search;
+    private CancellationTokenSource? _searchCts;
+
+    [Parameter] public EventCallback<string?> OnSearch { get; set; }
+    [Parameter] public string Placeholder { get; set; } = "Search...";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public int DebounceDelay { get; set; } = 300;
+
+    private async Task OnInternalSearchChanged(string? value)
+    {
+        _search = value;
+
+        // ReSharper disable once MethodHasAsyncOverload
+        _searchCts?.Cancel();
+        _searchCts?.Dispose();
+        _searchCts = new CancellationTokenSource();
+
+        try
+        {
+            await Task.Delay(DebounceDelay, _searchCts.Token);
+            await OnSearch.InvokeAsync(_search);
+        }
+        catch (TaskCanceledException)
+        {
+        }
+    }
+
+}

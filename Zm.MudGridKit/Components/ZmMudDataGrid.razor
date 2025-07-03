@@ -38,13 +38,7 @@
         <MudSpacer/>
         @if (Options.SearchEnabled)
         {
-            <MudTextField T="string"
-                          ValueChanged="@(s => OnSearch(s))"
-                          Placeholder=@L["Placeholder.Search"]
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Filled.Search"
-                          IconSize="Size.Medium"
-                          Class="mt-0"/>
+            <SearchInput OnSearch="OnSearch" Placeholder="@L["Placeholder.Search"]" />
         }
         @if (TopRightContent is not null)
         {
@@ -82,11 +76,6 @@
         return CrudDataGridService.LoadData(state);
     }
 
-    protected override Task OnSearch(string? searchText)
-    {
-        return searchText != null ? CrudDataGridService.OnSearch(searchText) : Task.CompletedTask;
-    }
-
     private async Task OnAdd()
     {
         await CrudDataGridService.OnAdd();
@@ -106,6 +95,12 @@
     {
         var selectedItems = DataGrid.SelectedItems.ToList();
         await CrudDataGridService.OnDelete(selectedItems);
+        await DataGrid.ReloadServerData();
+    }
+  
+    protected override async Task OnSearch(string? searchText)
+    {
+        await CrudDataGridService.OnSearch(searchText);
         await DataGrid.ReloadServerData();
     }
 
