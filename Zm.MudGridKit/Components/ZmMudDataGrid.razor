@@ -66,7 +66,7 @@
     [Parameter] public DataGridOptions Options { get; set; } = new();
     [Parameter] public RenderFragment? Columns { get; set; }
     [Parameter] public RenderFragment? TopRightContent { get; set; }
-    
+
     private IStringLocalizer L = null!;
 
     /// <summary>
@@ -87,7 +87,7 @@
             "ZmMudDataGridLocalization",
             typeof(ZmMudDataGridLocalization).Assembly.GetName().Name!
         );
-        
+
         DataGridService.DialogService = DialogService;
     }
 
