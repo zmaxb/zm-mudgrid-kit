@@ -38,7 +38,7 @@
         <MudSpacer/>
         @if (Options.SearchEnabled)
         {
-            <SearchInput OnSearch="OnSearch" Placeholder="@L["Placeholder.Search"]" />
+            <SearchInput OnSearch="OnSearch" Placeholder="@L["Placeholder.Search"]"/>
         }
         @if (TopRightContent is not null)
         {
@@ -97,10 +97,10 @@
         await CrudDataGridService.OnDelete(selectedItems);
         await DataGrid.ReloadServerData();
     }
-  
+
     protected override async Task OnSearch(string? searchText)
     {
-        await CrudDataGridService.OnSearch(searchText);
+        await CrudDataGridService.OnSearch(searchText ?? string.Empty);
         await DataGrid.ReloadServerData();
     }
 

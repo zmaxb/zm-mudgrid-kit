@@ -1,5 +1,4 @@
 using System.Linq.Expressions;
-using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using MudBlazor;
@@ -11,34 +10,11 @@ namespace Zm.MudGridKit.DataGrid;
 public class ColumnBuilder<TItem>
 {
     private readonly List<ColumnConfig<TItem>> _columns = new();
+    private ColumnConfig<TItem>? _selectionColumn;
 
     public static ColumnBuilder<TItem> For()
     {
         return new ColumnBuilder<TItem>();
-    }
-
-    public ColumnBuilder<TItem> Add<TProp>(
-        Expression<Func<TItem, TProp>> property,
-        string title,
-        bool sortable = true,
-        bool filterable = true,
-        Align align = Align.Left,
-        string? format = null,
-        bool visible = true)
-    {
-        _columns.Add(new ColumnConfig<TItem>
-        {
-            Property = property,
-            Title = title,
-            Sortable = sortable,
-            Filterable = filterable,
-            Align = align,
-            Format = format,
-            Visible = visible,
-            PropertyType = typeof(TProp)
-        });
-
-        return this;
     }
 
     public ColumnBuilder<TItem> AddColumn(Action<ColumnConfig<TItem>> configure)
@@ -46,11 +22,10 @@ public class ColumnBuilder<TItem>
         var config = new ColumnConfig<TItem>();
         configure(config);
 
-        if (config.Property == null)
+        if (config.Property == null && !config.IsSelectionColumn)
             throw new InvalidOperationException("Column must have a Property defined.");
 
         _columns.Add(config);
-
         return this;
     }
 
@@ -65,7 +40,6 @@ public class ColumnBuilder<TItem>
 
         configure?.Invoke(config);
         _columns.Add(config);
-
         return this;
     }
 
@@ -74,23 +48,13 @@ public class ColumnBuilder<TItem>
         return AddColumn(property, null);
     }
 
-
     public ColumnBuilder<TItem> AddColumnsIf(bool condition, Action<ColumnBuilder<TItem>> columns)
     {
         if (condition) columns(this);
-
         return this;
     }
 
-    private static Type GetPropertyType(LambdaExpression expr)
-    {
-        var member = expr.Body as MemberExpression;
-        var propertyInfo = member?.Member as PropertyInfo;
-        return propertyInfo?.PropertyType ?? typeof(object);
-    }
-
-    public ColumnBuilder<TItem> WithTemplate<TProp>(
-        Expression<Func<TItem, TProp>> property,
+    public ColumnBuilder<TItem> WithTemplate<TProp>(Expression<Func<TItem, TProp>> property,
         RenderFragment<CellContext<TItem>> template)
     {
         var column = FindColumn(property);
@@ -100,8 +64,7 @@ public class ColumnBuilder<TItem>
         return this;
     }
 
-    public ColumnBuilder<TItem> WithHeaderTemplate<TProp>(
-        Expression<Func<TItem, TProp>> property,
+    public ColumnBuilder<TItem> WithHeaderTemplate<TProp>(Expression<Func<TItem, TProp>> property,
         RenderFragment<HeaderContext<TItem>> template)
     {
         var column = FindColumn(property);
@@ -111,46 +74,65 @@ public class ColumnBuilder<TItem>
         return this;
     }
 
+    public ColumnBuilder<TItem> WithRowSelection(Action<ColumnConfig<TItem>>? configure = null)
+    {
+        _selectionColumn = new ColumnConfig<TItem>
+        {
+            IsSelectionColumn = true,
+            Property = (Expression<Func<TItem, bool>>)(x => true),
+            PropertyType = typeof(bool)
+        };
+
+        configure?.Invoke(_selectionColumn);
+        return this;
+    }
+
     public RenderFragment Build()
     {
         return builder =>
         {
             var seq = 0;
 
-            builder.OpenComponent(seq++, typeof(SelectColumn<>).MakeGenericType(typeof(TItem)));
-            builder.CloseComponent();
+            // всегда сначала чекбокс
+            if (_selectionColumn != null && _selectionColumn.Visible)
+                BuildColumnComponent(builder, ref seq, _selectionColumn);
 
-            foreach (var column in _columns)
-            {
-                if (!column.Visible) continue;
-                BuildColumnComponent(builder, ref seq, column);
-            }
+            foreach (var column in _columns.Where(c => c.Visible)) BuildColumnComponent(builder, ref seq, column);
         };
     }
 
     private void BuildColumnComponent(RenderTreeBuilder builder, ref int seq, ColumnConfig<TItem> column)
     {
-        var componentType = typeof(PropertyColumn<,>)
-            .MakeGenericType(typeof(TItem), column.PropertyType);
+        var isSelection = column.IsSelectionColumn;
+        var componentType = isSelection
+            ? typeof(SelectColumn<>).MakeGenericType(typeof(TItem))
+            : typeof(PropertyColumn<,>).MakeGenericType(typeof(TItem), column.PropertyType);
 
         builder.OpenComponent(seq++, componentType);
-        builder.AddAttribute(seq++, "Property", column.Property);
 
-        builder.AddAttribute(seq++, column.HeaderTemplate is not null ? "HeaderTemplate" : "Title",
-            column.HeaderTemplate ?? (object?)column.Title);
+        if (!isSelection)
+        {
+            builder.AddAttribute(seq++, "Property", column.Property);
+            builder.AddAttribute(seq++, column.HeaderTemplate is not null ? "HeaderTemplate" : "Title",
+                column.HeaderTemplate ?? (object?)column.Title);
+            builder.AddAttribute(seq++, "Sortable", column.Sortable);
+            builder.AddAttribute(seq++, "Filterable", column.Filterable);
 
-        builder.AddAttribute(seq++, "Sortable", column.Sortable);
-        builder.AddAttribute(seq++, "Filterable", column.Filterable);
-        builder.AddAttribute(seq++, "Align", column.Align);
+            if (!string.IsNullOrWhiteSpace(column.Format))
+                builder.AddAttribute(seq++, "Format", column.Format);
 
-        if (!string.IsNullOrWhiteSpace(column.Format))
-            builder.AddAttribute(seq++, "Format", column.Format);
+            if (column.InitialDirection is not null)
+                builder.AddAttribute(seq++, "InitialDirection", column.InitialDirection);
+        }
+
+        if (!string.IsNullOrWhiteSpace(column.CellStyle))
+            builder.AddAttribute(seq++, "CellStyle", column.CellStyle);
+
+        if (!string.IsNullOrWhiteSpace(column.HeaderStyle))
+            builder.AddAttribute(seq++, "HeaderStyle", column.HeaderStyle);
 
         if (column.Template is not null)
             builder.AddAttribute(seq++, "CellTemplate", column.Template);
-
-        if (column.InitialDirection is not null)
-            builder.AddAttribute(seq++, "InitialDirection", column.InitialDirection);
 
         builder.CloseComponent();
     }
@@ -159,22 +141,5 @@ public class ColumnBuilder<TItem>
     {
         var targetName = (property.Body as MemberExpression)?.Member.Name;
         return _columns.FirstOrDefault(c => c.PropertyName == targetName);
-    }
-
-    public class ColumnConfig<T>
-    {
-        public LambdaExpression Property { get; set; } = null!;
-        public string Title { get; set; } = string.Empty;
-        public bool Sortable { get; set; } = true;
-        public bool Filterable { get; set; } = true;
-        public Align Align { get; set; } = Align.Left;
-        public string? Format { get; set; }
-        public bool Visible { get; set; } = true;
-        public Type PropertyType { get; set; } = null!;
-        public RenderFragment<CellContext<TItem>>? Template { get; set; }
-        public RenderFragment<HeaderContext<TItem>>? HeaderTemplate { get; set; }
-        public SortDirection? InitialDirection { get; set; }
-
-        public string PropertyName => (Property.Body as MemberExpression)?.Member.Name ?? string.Empty;
     }
 }

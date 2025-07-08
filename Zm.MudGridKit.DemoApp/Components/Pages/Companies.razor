@@ -1,10 +1,11 @@
 @page "/"
 @using Zm.MudGridKit.DataGrid
+@using Zm.MudGridKit.DemoApp.Components.Extensions
 @using Zm.MudGridKit.DemoApp.Models
 @using Zm.MudGridKit.Components
 
-<MudText Typo="Typo.h4" GutterBottom="true">Assets</MudText>
-<MudText Typo="Typo.body1" Class="mb-8">All financial instruments</MudText>
+<MudText Typo="Typo.h4" GutterBottom="true">Companies</MudText>
+<MudText Typo="Typo.body1" Class="mb-8">All Companies</MudText>
 
 <ZmMudDataGrid T="AssetReadDto" Options="_options" Columns="AssetColumns"/>
 
@@ -12,6 +13,7 @@
     private readonly DataGridOptions _options = new();
 
     private RenderFragment AssetColumns => ColumnBuilder<AssetReadDto>.For()
+        .WithRowSelection()
         .AddColumn(x => x.GlobalId, c => { c.Title = "ID"; })
         .AddColumn<string>(x => x.Name, c => { c.Title = "Name"; })
         .AddColumn<string>(x => x.Symbol, c =>
@@ -24,13 +26,12 @@
         .AddColumn(x => x.Precision, c =>
         {
             c.Title = "Precision";
-            c.Align = Align.Right;
             c.Format = "0.###";
+            c.Centered();
         })
         .AddColumn(x => x.CreatedAt, c =>
         {
             c.Title = "Created At";
-            c.Align = Align.Right;
             c.Format = "dd MMM yyyy";
         })
         .Build();
